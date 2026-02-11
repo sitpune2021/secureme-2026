@@ -396,6 +396,7 @@ class AuthController extends Controller
                 ]
             ], 200);
         } catch (\Throwable $th) {
+            dd($th);
             Log::error('Error fetching user contacts: ' . $th->getMessage());
 
             return response()->json([
