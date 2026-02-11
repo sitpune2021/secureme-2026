@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
+use App\Models\EmergencyGroup;
+use App\Models\EmergencyGroupMember;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
@@ -15,60 +17,6 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
-    // public function register(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'user_role' => 'required|string',
-    //         'name'      => 'required|string|max:255',
-    //         'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
-    //         'password'  => 'required|string|min:8',
-    //         'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Validation Error',
-    //             'errors'  => $validator->errors()
-    //         ], 422);
-    //     }
-
-    //     $validated = $validator->validated();
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $user = User::create([
-    //             'user_role' => $validated['user_role'],
-    //             'name'      => $validated['name'],
-    //             'email'     => strtolower($validated['email']),
-    //             'password'  => Hash::make($validated['password']),
-    //             'phone_no'  => $validated['phone_no'],
-    //         ]);
-
-    //         $token = $user->createToken('auth_api_token')->plainTextToken;
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status'  => true,
-    //             'message' => 'Account created successfully',
-    //             'data'    => [
-    //                 'token' => $token,
-    //                 'user'  => $user->only(['id', 'name', 'email', 'phone_no', 'user_role']),
-    //             ],
-    //         ], 201);
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-    //         Log::critical("User Registration Failure", [
-    //             'email' => $request->email,
-    //             'error' => $e->getMessage()
-    //         ]);
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Registration failed due to a system error.',
-    //             'error'   => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -213,7 +161,7 @@ class AuthController extends Controller
                 ],
             ], 200);
         } catch (\Throwable $e) {
-            // Log::error("Profile Fetch Error: " . $e->getMessage());
+            Log::error("Profile Fetch Error: " . $e->getMessage());
 
             return response()->json([
                 'status'  => false,
@@ -271,7 +219,6 @@ class AuthController extends Controller
                 'otp_expires_at' => Carbon::now()->addMinutes(5),
             ]);
 
-            // ✅ Send using Mailable
             Mail::to($user->email)->send(new OtpMail($otp));
 
             return response()->json([
@@ -279,13 +226,14 @@ class AuthController extends Controller
                 'message' => 'OTP sent to email'
             ]);
         } catch (\Throwable $th) {
-            dd($th);
+            Log::error('Error verifying OTP: ' . $th->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while sending OTP. Please try again later.'
+            ], 500);
         }
     }
 
-    /**
-     * VERIFY OTP
-     */
     public function verifyOtp(Request $request)
     {
         try {
@@ -320,23 +268,21 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Clear OTP
             $user->update([
                 'otp' => null,
                 'otp_expires_at' => null,
             ]);
 
-            // Sanctum Token
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
                 'status' => true,
                 'message' => 'Login successful',
                 'token' => $token,
-                'user' => $user
+                // 'user' => $user
+                'user'  => $user->only(['id', 'name', 'email', 'user_role', 'phone_no']),
             ]);
         } catch (\Throwable $th) {
-            dd($th);
             Log::error('Error verifying OTP: ' . $th->getMessage());
             return response()->json([
                 'status' => false,
@@ -556,7 +502,7 @@ class AuthController extends Controller
         }
     }
 
-    public function deleteContact(Request $request, $id)
+    public function deleteContact($id)
     {
         try {
             $contact = User::findOrFail($id);
@@ -572,6 +518,93 @@ class AuthController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'An error occurred while deleting contact. Please try again later.'
+            ], 500);
+        }
+    }
+
+    public function createGroup(Request $request)
+    {
+        try {
+            $request->validate([
+                'group_name' => 'required|string|max:255',
+                'group_type' => 'required|in:police,helper,gym,mixed',
+                'description' => 'nullable|string'
+            ]);
+
+            $group = EmergencyGroup::create([
+                'owner_id'   => $request->user()->id,
+                'group_name' => $request->group_name,
+                'group_type' => $request->group_type,
+                'description' => $request->description,
+            ]);
+
+            EmergencyGroupMember::create([
+                'group_id' => $group->id,
+                'user_id'  => $request->user()->id,
+                'role'     => 'owner',
+                'status'   => 'approved',
+                'joined_at' => now()
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Group created successfully',
+                'data'   => $group
+            ]);
+        } catch (\Throwable $th) {
+            Log::error('Error creating group: ' . $th->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while creating group. Please try again later.'
+            ], 500);
+        }
+    }
+    public function joinGroup($groupId, Request $request)
+    {
+        try {
+
+            EmergencyGroupMember::firstOrCreate([
+                'group_id' => $groupId,
+                'user_id'  => $request->user()->id
+            ], [
+                'status' => 'pending'
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Join request sent'
+            ]);
+        } catch (\Throwable $th) {
+            Log::error('Error joining group: ' . $th->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while joining group. Please try again later.'
+            ], 500);
+        }
+    }
+    public function approveMember($groupId, $userId)
+    {
+        try {
+            EmergencyGroupMember::where([
+                'group_id' => $groupId,
+                'user_id'  => $userId
+            ])->update([
+                'status' => 'approved',
+                'joined_at' => now()
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Member approved'
+            ]);
+        } catch (\Throwable $th) {
+            Log::error('Error joining group: ' . $th->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while approving member. Please try again later.'
             ], 500);
         }
     }

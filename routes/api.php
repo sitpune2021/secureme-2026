@@ -24,4 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/add/contacts', [AuthController::class, 'userAddContacts']);
     Route::post('/update/contacts/{id}', [AuthController::class, 'updateContact']);
     Route::delete('/delete/contacts/{id}', [AuthController::class, 'deleteContact']);
+
+    // Emergency Group Routes
+    Route::post('/community/create/groups', [AuthController::class, 'createGroup']);
 });
