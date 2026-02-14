@@ -9,8 +9,6 @@ class EmergencyGroupMember extends Model
     protected $fillable = [
         'group_id',
         'user_id',
-        'role',
-        'status',
         'joined_at'
     ];
 

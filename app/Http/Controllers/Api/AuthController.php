@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
 use App\Models\EmergencyGroup;
 use App\Models\EmergencyGroupMember;
+use App\Models\EmergencyResponse;
+use App\Models\EmergencySignal;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
@@ -17,58 +19,131 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
+    // public function register(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'user_role' => 'required|string',
+    //         'name'      => 'required|string|max:255',
+    //         'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+    //         'password'  => 'required|string|min:8',
+    //         'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
+    //         'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Validation Error',
+    //             'errors'  => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $imagePath = null;
+
+    //         if ($request->hasFile('image')) {
+    //             $image      = $request->file('image');
+    //             $imageName  = uniqid('user_') . '_' . time() . '.' . $image->getClientOriginalExtension();
+    //             $uploadPath = public_path('admin-assets/img/users');
+
+    //             if (!file_exists($uploadPath)) {
+    //                 mkdir($uploadPath, 0755, true);
+    //             }
+
+    //             $image->move($uploadPath, $imageName);
+    //             $imagePath = $imageName;
+    //         }
+
+    //         $user = User::create([
+    //             'user_role'         => $request->user_role,
+    //             'name'              => $request->name,
+    //             'email'             => strtolower($request->email),
+    //             'password'          => Hash::make($request->password),
+    //             'phone_no'          => $request->phone_no,
+    //             'profile_image'     => $imagePath,
+    //         ]);
+
+    //         $token = $user->createToken('auth_api_token')->plainTextToken;
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status'  => true,
+    //             'message' => 'Account created successfully',
+    //             'data'    => [
+    //                 'token' => $token,
+    //                 'user'  => [
+    //                     'id'        => $user->id,
+    //                     'name'      => $user->name,
+    //                     'email'     => $user->email,
+    //                     'phone_no'  => $user->phone_no,
+    //                     'user_role' => $user->user_role,
+    //                     'profile_image'     => $user->profile_image ? url('admin-assets/img/users/' . $user->profile_image) : null,
+    //                 ]
+    //             ]
+    //         ], 201);
+    //     } catch (\Throwable $e) {
+    //         DB::rollBack();
+
+    //         Log::critical("User Registration Failure", [
+    //             'email' => $request->email,
+    //             'error' => $e->getMessage()
+    //         ]);
+
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Registration failed due to a system error.'
+    //         ], 500);
+    //     }
+    // }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_role' => 'required|string',
+            'user_role' => 'required|string|in:Police,Gym_Person,General_User,Defense,User',
             'name'      => 'required|string|max:255',
             'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
             'password'  => 'required|string|min:8',
             'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
-            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp',
+            'latitude'  => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'fcm_token' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Validation Error',
-                'errors'  => $validator->errors()
-            ], 422);
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
         }
 
         DB::beginTransaction();
-
         try {
             $imagePath = null;
-
             if ($request->hasFile('image')) {
-                $image      = $request->file('image');
-                $imageName  = uniqid('user_') . '_' . time() . '.' . $image->getClientOriginalExtension();
-                $uploadPath = public_path('admin-assets/img/users');
-
-                if (!file_exists($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
-
-                $image->move($uploadPath, $imageName);
+                $image = $request->file('image');
+                $imageName = uniqid('user_') . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('admin-assets/img/users'), $imageName);
                 $imagePath = $imageName;
             }
 
             $user = User::create([
-                'user_role'         => $request->user_role,
-                'name'              => $request->name,
-                'email'             => strtolower($request->email),
-                'password'          => Hash::make($request->password),
-                'phone_no'          => $request->phone_no,
-                'profile_image'     => $imagePath,
+                'user_role'     => $request->user_role,
+                'name'          => $request->name,
+                'email'         => strtolower($request->email),
+                'password'      => Hash::make($request->password),
+                'phone_no'      => $request->phone_no,
+                'profile_image' => $imagePath,
+                'latitude'      => $request->latitude,
+                'longitude'     => $request->longitude,
+                'fcm_token'     => $request->fcm_token,
             ]);
 
             $token = $user->createToken('auth_api_token')->plainTextToken;
             DB::commit();
 
             return response()->json([
-                'status'  => true,
-                'message' => 'Account created successfully',
+                'status' => true,
+                'message' => 'Account created with location data',
+                // 'data' => ['token' => $token, 'user' => $user]
                 'data'    => [
                     'token' => $token,
                     'user'  => [
@@ -77,6 +152,7 @@ class AuthController extends Controller
                         'email'     => $user->email,
                         'phone_no'  => $user->phone_no,
                         'user_role' => $user->user_role,
+                        'fcm_token'     => $user->fcm_token,
                         'profile_image'     => $user->profile_image ? url('admin-assets/img/users/' . $user->profile_image) : null,
                     ]
                 ]
@@ -523,90 +599,168 @@ class AuthController extends Controller
         }
     }
 
-    public function createGroup(Request $request)
+    public function triggerSignal(Request $request)
     {
-        try {
-            $request->validate([
-                'group_name' => 'required|string|max:255',
-                'group_type' => 'required|in:police,helper,gym,mixed',
-                'description' => 'nullable|string'
-            ]);
+        // Validate that lat/long are in the request BODY
+        $validator = Validator::make($request->all(), [
+            'latitude'  => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
 
-            $group = EmergencyGroup::create([
-                'owner_id'   => $request->user()->id,
-                'group_name' => $request->group_name,
-                'group_type' => $request->group_type,
-                'description' => $request->description,
-            ]);
-
-            EmergencyGroupMember::create([
-                'group_id' => $group->id,
-                'user_id'  => $request->user()->id,
-                'role'     => 'owner',
-                'status'   => 'approved',
-                'joined_at' => now()
-            ]);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Group created successfully',
-                'data'   => $group
-            ]);
-        } catch (\Throwable $th) {
-            Log::error('Error creating group: ' . $th->getMessage());
-
+        if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'An error occurred while creating group. Please try again later.'
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+
+            return DB::transaction(function () use ($request, $user) {
+                // 1. Store the signal in emergency_signals
+                $signal = EmergencySignal::create([
+                    'user_id'       => $user->id,
+                    'signal_id'     => 'SIG-' . strtoupper(uniqid()),
+                    'signal_status' => 'Active',
+                    'latitude'      => $request->latitude,
+                    'longitude'     => $request->longitude,
+                ]);
+
+                // 2. Find responders within 1km (Haversine Formula)
+                $radius = 1;
+                $nearbyResponders = User::select('id', 'user_role')
+                    ->whereIn('user_role', ['Police', 'Gym_Person', 'Defense'])
+                    ->where('id', '!=', $user->id)
+                    ->selectRaw(
+                        "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance",
+                        [$request->latitude, $request->longitude, $request->latitude]
+                    )
+                    ->having('distance', '<=', $radius)
+                    ->get();
+
+                // 3. Create the Emergency Group
+                $group = EmergencyGroup::create([
+                    'signal_id'  => $signal->id,
+                    'group_name' => "Rescue Group for " . $user->name,
+                ]);
+
+                // 4. Add nearby members to emergency_group_members
+                if ($nearbyResponders->isNotEmpty()) {
+                    $membersData = $nearbyResponders->map(function ($responder) use ($group) {
+                        return [
+                            'group_id'   => $group->id,
+                            'user_id'    => $responder->id,
+                            'joined_at'  => now(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    })->toArray();
+
+                    EmergencyGroupMember::insert($membersData);
+                }
+
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Signal activated. ' . $nearbyResponders->count() . ' helpers notified.',
+                    'data'    => [
+                        'signal_id' => $signal->signal_id,
+                        'group_id'  => $group->id,
+                        'helpers_found' => $nearbyResponders->count()
+                    ]
+                ]);
+            });
+        } catch (\Throwable $th) {
+            Log::error('Signal Error: ' . $th->getMessage());
+            return response()->json(['status' => false, 'message' => 'Server Error'], 500);
+        }
+    }
+    /**
+     * Updates the user's current GPS coordinates.
+     * Used by Flutter in the background to keep the responder's position fresh.
+     */
+    public function updateLocation(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude'  => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+
+            $user->update([
+                'latitude'             => $request->latitude,
+                'longitude'            => $request->longitude,
+                'last_location_update' => now(),
+            ]);
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Location updated.',
+                'data'    => [
+                    'lat' => $user->latitude,
+                    'lng' => $user->longitude,
+                    'last_sync' => $user->last_location_update->toDateTimeString()
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            Log::error("Location Update Error: " . $th->getMessage());
+            return response()->json([
+                'status'  => false,
+                'message' => 'Server error during location sync.'
             ], 500);
         }
     }
-    public function joinGroup($groupId, Request $request)
+    /**
+     * Records a helper's response to an active signal.
+     * This populates the 'emergency_responses' table.
+     */
+    public function respondToSignal(Request $request)
     {
-        try {
+        $validator = Validator::make($request->all(), [
+            'signal_id' => 'required|exists:emergency_signals,id',
+            'action'    => 'required|string',
+            'notes'     => 'nullable|string',
+        ]);
 
-            EmergencyGroupMember::firstOrCreate([
-                'group_id' => $groupId,
-                'user_id'  => $request->user()->id
-            ], [
-                'status' => 'pending'
-            ]);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Join request sent'
-            ]);
-        } catch (\Throwable $th) {
-            Log::error('Error joining group: ' . $th->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while joining group. Please try again later.'
-            ], 500);
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
         }
-    }
-    public function approveMember($groupId, $userId)
-    {
+
         try {
-            EmergencyGroupMember::where([
-                'group_id' => $groupId,
-                'user_id'  => $userId
-            ])->update([
-                'status' => 'approved',
-                'joined_at' => now()
+            $user = $request->user();
+
+            $responderType = 'helper';
+            if (in_array($user->user_role, ['Police', 'Defense'])) {
+                $responderType = 'police';
+            }
+
+            $response = EmergencyResponse::create([
+                'signal_id'       => $request->signal_id,
+                'responder_type'  => $responderType,
+                'user_id'         => $user->id,
+                'response_action' => $request->action,
+                'response_notes'  => $request->notes ?? 'Responder is moving to location.',
+                'status'          => 'in_progress',
             ]);
 
             return response()->json([
-                'status' => true,
-                'message' => 'Member approved'
+                'status'  => true,
+                'message' => 'Response registered. You are now linked to this emergency.',
+                'data'    => $response
             ]);
         } catch (\Throwable $th) {
-            Log::error('Error joining group: ' . $th->getMessage());
-
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while approving member. Please try again later.'
-            ], 500);
+            Log::error("Response Error: " . $th->getMessage());
+            return response()->json(['status' => false, 'message' => 'Could not register response.'], 500);
         }
     }
 }

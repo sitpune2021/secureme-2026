@@ -26,5 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/delete/contacts/{id}', [AuthController::class, 'deleteContact']);
 
     // Emergency Group Routes
-    Route::post('/community/create/groups', [AuthController::class, 'createGroup']);
+    Route::post('/signal/trigger', [AuthController::class, 'triggerSignal']);
+
+    Route::post('/user/update-location', [AuthController::class, 'updateLocation']);
+    Route::post('/signal/respond', [AuthController::class, 'respondToSignal']);
 });

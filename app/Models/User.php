@@ -24,9 +24,14 @@ class User extends Authenticatable
         'email',
         'password',
         'phone_no',
+        'fcm_token',
         'otp',
         'otp_expires_at',
         'profile_image',
+        'is_available',
+        'latitude',
+        'longitude',
+        'last_location_update',
     ];
 
     /**
