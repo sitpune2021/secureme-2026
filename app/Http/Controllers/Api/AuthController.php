@@ -802,12 +802,12 @@ class AuthController extends Controller
 
             foreach ($request->contacts as $contactData) {
                 User::updateOrCreate(
-                    ['phone_no' => $contactData['phone_no']], // Check if phone exists
+                    ['phone_no' => $contactData['phone_no']],
                     [
                         'name'         => $contactData['name'],
                         'community_id' => $communityId,
                         'user_role'    => 'User',
-                        'password'     => Hash::make('defaultpassword'), // Only used if creating new
+                        'password'     => Hash::make('defaultpassword'),
                     ]
                 );
                 $addedCount++;
@@ -820,7 +820,6 @@ class AuthController extends Controller
                 'message' => "$addedCount contacts processed successfully.",
             ], 200);
         } catch (\Throwable $th) {
-            dd($th);
             DB::rollBack();
             Log::error('Bulk Contact Error: ' . $th->getMessage());
             return response()->json(['status' => false, 'message' => 'Error processing contacts.'], 500);
