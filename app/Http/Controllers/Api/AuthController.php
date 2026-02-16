@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
+use App\Models\Community;
 use App\Models\EmergencyGroup;
 use App\Models\EmergencyGroupMember;
 use App\Models\EmergencyResponse;
@@ -19,84 +20,7 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
-    // public function register(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'user_role' => 'required|string',
-    //         'name'      => 'required|string|max:255',
-    //         'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
-    //         'password'  => 'required|string|min:8',
-    //         'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
-    //         'image'     => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //     ]);
 
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Validation Error',
-    //             'errors'  => $validator->errors()
-    //         ], 422);
-    //     }
-
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $imagePath = null;
-
-    //         if ($request->hasFile('image')) {
-    //             $image      = $request->file('image');
-    //             $imageName  = uniqid('user_') . '_' . time() . '.' . $image->getClientOriginalExtension();
-    //             $uploadPath = public_path('admin-assets/img/users');
-
-    //             if (!file_exists($uploadPath)) {
-    //                 mkdir($uploadPath, 0755, true);
-    //             }
-
-    //             $image->move($uploadPath, $imageName);
-    //             $imagePath = $imageName;
-    //         }
-
-    //         $user = User::create([
-    //             'user_role'         => $request->user_role,
-    //             'name'              => $request->name,
-    //             'email'             => strtolower($request->email),
-    //             'password'          => Hash::make($request->password),
-    //             'phone_no'          => $request->phone_no,
-    //             'profile_image'     => $imagePath,
-    //         ]);
-
-    //         $token = $user->createToken('auth_api_token')->plainTextToken;
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status'  => true,
-    //             'message' => 'Account created successfully',
-    //             'data'    => [
-    //                 'token' => $token,
-    //                 'user'  => [
-    //                     'id'        => $user->id,
-    //                     'name'      => $user->name,
-    //                     'email'     => $user->email,
-    //                     'phone_no'  => $user->phone_no,
-    //                     'user_role' => $user->user_role,
-    //                     'profile_image'     => $user->profile_image ? url('admin-assets/img/users/' . $user->profile_image) : null,
-    //                 ]
-    //             ]
-    //         ], 201);
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-
-    //         Log::critical("User Registration Failure", [
-    //             'email' => $request->email,
-    //             'error' => $e->getMessage()
-    //         ]);
-
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Registration failed due to a system error.'
-    //         ], 500);
-    //     }
-    // }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -761,6 +685,145 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             Log::error("Response Error: " . $th->getMessage());
             return response()->json(['status' => false, 'message' => 'Could not register response.'], 500);
+        }
+    }
+
+    public function createCommunity(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'community_name' => 'required|string|max:255|unique:community,community_name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $user = $request->user();
+
+            $community = Community::create([
+                'community_name' => $request->community_name,
+                'creater_id'     => $user->id,
+            ]);
+
+            $user->update([
+                'community_id' => $community->id
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Community created and user assigned successfully',
+                'data' => [
+                    'community' => $community,
+                    'user_community_id' => $user->community_id
+                ]
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack(); // Undo changes if something fails
+            Log::error('Error creating community: ' . $th->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred. Please try again later.'
+            ], 500);
+        }
+    }
+
+    // public function addContactsToCommunity(Request $request)
+    // {
+    //     try {
+    //         $validator = Validator::make($request->all(), [
+    //             'name'      => 'required|string|max:255',
+    //             'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
+    //             'community_id'  => 'required|exists:community,id',
+    //         ]);
+
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => $validator->errors()->first()
+    //             ], 422);
+    //         }
+
+    //         $validated = $validator->validated();
+
+    //         $contact = User::create([
+    //             'name'      => $validated['name'],
+    //             'phone_no'  => $validated['phone_no'],
+    //             'password'  => Hash::make('defaultpassword'),
+    //             'user_role' => 'User',
+    //             'community_id' => $validated['community_id'],
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Contact added successfully',
+    //             'data' => [
+    //                 'id'        => $contact->id,
+    //                 'name'      => $contact->name,
+    //                 'phone_no'  => $contact->phone_no,
+    //                 'community_id' => $contact->community_id,
+    //             ]
+    //         ], 201);
+    //     } catch (\Throwable $th) {
+    //         dd($th);
+    //         Log::error('Error adding contact: ' . $th->getMessage());
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'An error occurred while adding contact. Please try again later.'
+    //         ], 500);
+    //     }
+    // }
+
+    public function addContactsToCommunity(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'community_id' => 'required|exists:community,id',
+            'contacts'     => 'required|array|min:1',
+            'contacts.*.name'     => 'required|string|max:255',
+            'contacts.*.phone_no' => 'required|string|min:10',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $addedCount = 0;
+            $communityId = $request->community_id;
+
+            foreach ($request->contacts as $contactData) {
+                User::updateOrCreate(
+                    ['phone_no' => $contactData['phone_no']], // Check if phone exists
+                    [
+                        'name'         => $contactData['name'],
+                        'community_id' => $communityId,
+                        'user_role'    => 'User',
+                        'password'     => Hash::make('defaultpassword'), // Only used if creating new
+                    ]
+                );
+                $addedCount++;
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => "$addedCount contacts processed successfully.",
+            ], 200);
+        } catch (\Throwable $th) {
+            dd($th);
+            DB::rollBack();
+            Log::error('Bulk Contact Error: ' . $th->getMessage());
+            return response()->json(['status' => false, 'message' => 'Error processing contacts.'], 500);
         }
     }
 }

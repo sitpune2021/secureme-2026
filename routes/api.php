@@ -30,4 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/user/update-location', [AuthController::class, 'updateLocation']);
     Route::post('/signal/respond', [AuthController::class, 'respondToSignal']);
+
+    // community routes
+    Route::post('/community/create', [AuthController::class, 'createCommunity']);
+    Route::post('/community/add-contacts', [AuthController::class, 'addContactsToCommunity']);
 });
