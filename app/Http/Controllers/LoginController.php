@@ -18,8 +18,8 @@ class LoginController extends Controller
 
     public function SaveLogin(Request $request)
     {
+        dd($request->all());
         try {
-            dd($request->all());
             $request->validate([
                 'email'    => 'required|email',
                 'password' => 'required|min:6',
