@@ -136,7 +136,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'status'  => false,
-                'message' => 'An error occurred during the login process 2.',
+                'message' => 'An error occurred during the login process.',
             ], 500);
         }
     }
