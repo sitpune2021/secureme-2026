@@ -38,6 +38,7 @@ class LoginController extends Controller
             }
             return back()->withErrors(['email' => 'Invalid credentials']);
         } catch (\Throwable $e) {
+            dd($e);
             return response()->json([
                 'status'  => false,
                 'message' => 'An error occurred during the login process.',
