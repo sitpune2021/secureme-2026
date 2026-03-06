@@ -18,7 +18,7 @@ class LoginController extends Controller
 
     public function SaveLogin(Request $request)
     {
-        dd($request->all());
+        dd($request->all(), "hii");
         try {
             $request->validate([
                 'email'    => 'required|email',
