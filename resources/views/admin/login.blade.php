@@ -25,10 +25,11 @@
         <section class="section">
             <div class="container mt-5">
                 <div class="row">
-                    <div class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
+                    <div
+                        class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
                         <div class="card card-primary">
                             <div class="card-header">
-                                <h4>Admin Login</h4>
+                                <h4>Admin Loginvvvvvvvv</h4>
                             </div>
                             <div class="card-body">
                                 {{-- ✅ Show Validation or Login Errors --}}
@@ -49,13 +50,13 @@
                                     </div>
                                 @endif
 
-                                <form action="{{ route('admin.save-login')}}" method="POST" class="needs-validation"
+                                <form action="{{ route('admin.save-login') }}" method="POST" class="needs-validation"
                                     novalidate="" id="loginForm">
                                     @csrf
                                     <div class="form-group">
                                         <label for="email">Email <code>*</code></label>
-                                        <input id="email" type="email" class="form-control" name="email" tabindex="1"
-                                            required autofocus>
+                                        <input id="email" type="email" class="form-control" name="email"
+                                            tabindex="1" required autofocus>
                                         <div class="invalid-feedback">
                                             Please fill in your email
                                         </div>
@@ -83,7 +84,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <button type="submit" id="loginBtn"  class="btn btn-primary btn-lg btn-block" tabindex="4">
+                                        <button type="submit" id="loginBtn" class="btn btn-primary btn-lg btn-block"
+                                            tabindex="4">
                                             Login
                                         </button>
                                     </div>
@@ -106,7 +108,7 @@
                             </div>
                         </div>
                         <div class="mt-5 text-muted text-center">
-                           Secure Me – where trust meets technology.
+                            Secure Me – where trust meets technology.
                         </div>
                     </div>
                 </div>
@@ -114,10 +116,10 @@
         </section>
     </div>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function () {
+        document.getElementById('loginForm').addEventListener('submit', function() {
             let btn = document.getElementById('loginBtn');
             btn.disabled = true; // prevent multiple clicks
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...'; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
         });
     </script>
 
