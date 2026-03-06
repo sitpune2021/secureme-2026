@@ -42,7 +42,7 @@ class LoginController extends Controller
             dd($e);
             return response()->json([
                 'status'  => false,
-                'message' => 'An error occurred during the login process.',
+                'message' => 'An error occurred during the login process 1.',
             ], 500);
         }
     }
