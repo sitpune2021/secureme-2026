@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Session;
 class LoginController extends Controller
 {
     // Show Admin login page
-    public function AdminLogin()
+    public function AdminLogin(Request $request)
     {
         return view('admin.login');
     }
