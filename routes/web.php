@@ -15,12 +15,13 @@ use App\Http\Controllers\SettingsController;
 Route::get('/', function () {
     return redirect()->route('admin.admin-login');
 });
+
 Route::get('/admin/admin-login', [LoginController::class, 'AdminLogin'])->name('admin.admin-login');
 Route::post('/admin/save-login', [LoginController::class, 'SaveLogin'])->name('admin.save-login');
 Route::get('/admin/logout', [LoginController::class, 'Logout'])->name('admin.logout');
 
 /// Protected Admin Routes
-Route::middleware(['auth:admin'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/admin/admin-dashboard', [DashboardController::class, 'AdminDashboard'])->name('admin.dashboard');
 
     // Users Module

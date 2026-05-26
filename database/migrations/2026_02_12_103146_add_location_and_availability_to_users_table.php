@@ -6,30 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->boolean('is_available')->default(true)->after('user_role');
 
-            $table->decimal('latitude', 10, 8)->nullable()->after('phone_no');
-            $table->decimal('longitude', 11, 8)->nullable()->after('latitude');
+            $table->boolean('is_available')->default(true);
 
-            $table->timestamp('last_location_update')->nullable()->after('longitude');
+            $table->decimal('latitude', 10, 8)->nullable();
+
+            $table->decimal('longitude', 11, 8)->nullable();
+
+            $table->timestamp('last_location_update')->nullable();
         });
     }
-    /**
-     * Reverse the migrations.
-     */
+
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_available');
-            $table->dropColumn('latitude');
-            $table->dropColumn('longitude');
-            $table->dropColumn('last_location_update');
+
+            $table->dropColumn([
+                'is_available',
+                'latitude',
+                'longitude',
+                'last_location_update'
+            ]);
         });
     }
 };

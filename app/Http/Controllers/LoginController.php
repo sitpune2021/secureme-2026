@@ -18,32 +18,24 @@ class LoginController extends Controller
 
     public function SaveLogin(Request $request)
     {
-        try {
-            $request->validate([
-                'email'    => 'required|email',
-                'password' => 'required|min:6',
-            ]);
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|min:6',
+        ]);
 
-            $admin = DB::table('admins')->where('email', $request->email)->first();
+        $credentials = $request->only('email', 'password');
 
-            $credentials = [
-                'email'    => $request->email,
-                'password' => $request->password,
-            ];
+        if (Auth::attempt($credentials)) {
 
-            if (Auth::guard('admin')->attempt($credentials)) {
+            $request->session()->regenerate();
 
-                $request->session()->regenerate();
-                return redirect()->intended(route('admin.dashboard'))->with('success', 'Welcome back, Admin!');
-            }
-            return back()->withErrors(['email' => 'Invalid credentials']);
-        } catch (\Throwable $e) {
-            dd($e);
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred during the login process 1.',
-            ], 500);
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Welcome back!');
         }
+
+        return back()->withErrors([
+            'email' => 'Invalid credentials'
+        ]);
     }
 
     public function Logout(Request $request)

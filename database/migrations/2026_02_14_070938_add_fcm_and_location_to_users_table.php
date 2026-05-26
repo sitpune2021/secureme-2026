@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // 1. Store the FCM Token (Text is safer as tokens can be very long)
-            $table->text('fcm_token')->nullable()->after('phone_no');
+            $table->text('fcm_token')->nullable();
 
             // 2. Ensure Latitude/Longitude are precise if they don't exist yet
             // Using decimal(10,8) and (11,8) is standard for GPS accuracy
