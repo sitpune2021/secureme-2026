@@ -31,11 +31,12 @@ Route::prefix('auth')->group(function () {
 
             Route::get('user-role', [AuthController::class, 'getUserRole']);
 
+            // contact
             Route::get('contacts', [AuthController::class, 'userContacts']);
 
             Route::post('add/contacts', [AuthController::class, 'userAddContacts']);
 
-            Route::post('update/contacts/{id}', [AuthController::class, 'updateContact']);
+            Route::put('contacts/{id}', [AuthController::class, 'updateContact']);
 
             Route::delete('delete/contacts/{id}', [AuthController::class, 'deleteContact']);
 
