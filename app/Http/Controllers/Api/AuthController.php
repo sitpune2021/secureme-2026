@@ -98,96 +98,81 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email'    => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6'],
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Validation Error',
-                'errors'  => $validator->errors()
-            ], 422);
-        }
-
-        $validated = $validator->validated();
-        $user = User::where('email', strtolower(trim($validated['email'])))->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Invalid email or password.',
-            ], 401);
-        }
-
         try {
-            $user->tokens()->delete();
-            $token = $user->createToken('auth_api_token')->plainTextToken;
 
-            return response()->json([
-                'status'  => true,
-                'message' => 'Login successful',
-                'data'    => [
-                    'token' => $token,
-                    'user'  => $user->only(['id', 'name', 'email', 'user_role', 'phone_no']),
-                ],
-            ], 200);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred during the login process 2.',
-            ], 500);
-        }
-    }
+            $validator = Validator::make($request->all(), [
 
-    public function profile(Request $request)
-    {
-        try {
-            $user = $request->user();
+                'email'    => 'required|email',
+                'password' => 'required|min:6',
 
-            if (!$user) {
+            ]);
+
+            if ($validator->fails()) {
+
                 return response()->json([
-                    'status'  => false,
-                    'message' => 'User not found or unauthenticated.',
+                    'status' => false,
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $email = strtolower(trim($request->email));
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid email or password'
                 ], 401);
             }
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Profile retrieved successfully',
-                'data'   => [
-                    'user' => $user->only(['id', 'name', 'email', 'user_role', 'phone_no', 'created_at']),
-                ],
-            ], 200);
-        } catch (\Throwable $e) {
-            Log::error("Profile Fetch Error: " . $e->getMessage());
+            if (!$user->is_active) {
 
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred while fetching the profile.',
-            ], 500);
-        }
-    }
-
-    public function logout(Request $request)
-    {
-        try {
-            $user = $request->user();
-            $token = $user ? $user->currentAccessToken() : null;
-            if ($token && method_exists($token, 'delete')) {
-                $token->delete();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your account is inactive'
+                ], 403);
             }
 
+            // Remove old tokens
+            $user->tokens()->delete();
+
+            // Generate new token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
+
                 'status' => true,
-                'message' => 'Successfully logged out from current session.'
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error logging out : ' . $e->getMessage());
+                'message' => 'Login successful',
+
+                'data' => [
+
+                    'token' => $token,
+
+                    'user' => [
+
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone_no' => $user->phone_no,
+                        'user_role' => $user->user_role,
+                        'profile_image' => $user->profile_image
+                            ? url('admin-assets/img/users/' . $user->profile_image)
+                            : null,
+                    ]
+                ]
+
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            Log::error('Login Error: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
-                'message' => 'An error occurred while logging out. Please try again later.'
+                'message' => 'Something went wrong'
             ], 500);
         }
     }
@@ -197,39 +182,58 @@ class AuthController extends Controller
         try {
 
             $validator = Validator::make($request->all(), [
+
                 'email' => 'required|email'
+
             ]);
 
             if ($validator->fails()) {
+
                 return response()->json([
                     'status' => false,
                     'message' => $validator->errors()->first()
                 ], 422);
             }
 
-            $user = User::firstOrCreate(
-                ['email' => $request->email],
-                ['name' => 'User']
-            );
+            $email = strtolower(trim($request->email));
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
 
             $otp = random_int(100000, 999999);
 
             $user->update([
+
                 'otp' => $otp,
-                'otp_expires_at' => Carbon::now()->addMinutes(5),
+                'otp_expires_at' => now()->addMinutes(5),
+
             ]);
 
             Mail::to($user->email)->send(new OtpMail($otp));
 
             return response()->json([
+
                 'status' => true,
-                'message' => 'OTP sent to email'
+                'message' => 'OTP sent successfully'
+
             ]);
-        } catch (\Throwable $th) {
-            Log::error('Error verifying OTP: ' . $th->getMessage());
+
+        } catch (\Throwable $e) {
+
+            Log::error('Send OTP Error: ' . $e->getMessage());
+
             return response()->json([
+
                 'status' => false,
-                'message' => 'An error occurred while sending OTP. Please try again later.'
+                'message' => 'Failed to send OTP'
+
             ], 500);
         }
     }
@@ -237,56 +241,193 @@ class AuthController extends Controller
     public function verifyOtp(Request $request)
     {
         try {
+
             $validator = Validator::make($request->all(), [
+
                 'email' => 'required|email',
-                'otp'   => 'required|digits:6'
+                'otp' => 'required|digits:6'
+
             ]);
 
             if ($validator->fails()) {
+
                 return response()->json([
                     'status' => false,
                     'message' => $validator->errors()->first()
                 ], 422);
             }
 
-            $user = User::where('email', $request->email)->first();
+            $email = strtolower(trim($request->email));
+
+            $user = User::where('email', $email)->first();
 
             if (!$user) {
+
                 return response()->json([
                     'status' => false,
                     'message' => 'User not found'
                 ], 404);
             }
 
+            if (!$user->is_active) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your account is inactive'
+                ], 403);
+            }
+
             if (
-                $user->otp !== $request->otp ||
+                $user->otp != $request->otp ||
                 now()->greaterThan($user->otp_expires_at)
             ) {
+
                 return response()->json([
                     'status' => false,
                     'message' => 'Invalid or expired OTP'
                 ], 401);
             }
 
+            // clear old tokens
+            $user->tokens()->delete();
+
+            // clear otp
             $user->update([
                 'otp' => null,
                 'otp_expires_at' => null,
             ]);
 
-            $token = $user->createToken('auth-token')->plainTextToken;
+            // generate token
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
+
                 'status' => true,
-                'message' => 'Login successful',
-                'token' => $token,
-                // 'user' => $user
-                'user'  => $user->only(['id', 'name', 'email', 'user_role', 'phone_no']),
+                'message' => 'OTP verified successfully',
+
+                'data' => [
+
+                    'token' => $token,
+
+                    'user' => [
+
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone_no' => $user->phone_no,
+                        'user_role' => $user->user_role,
+                        'profile_image' => $user->profile_image
+                            ? url('admin-assets/img/users/' . $user->profile_image)
+                            : null,
+                    ]
+                ]
+
             ]);
-        } catch (\Throwable $th) {
-            Log::error('Error verifying OTP: ' . $th->getMessage());
+
+        } catch (\Throwable $e) {
+
+            Log::error('Verify OTP Error: ' . $e->getMessage());
+
+            return response()->json([
+
+                'status' => false,
+                'message' => 'Something went wrong'
+
+            ], 500);
+        }
+    }
+
+   public function logout(Request $request)
+    {
+        try {
+
+            $user = $request->user();
+
+            if (!$user) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated user'
+                ], 401);
+            }
+
+            // Delete current token only
+            $user->currentAccessToken()->delete();
+
+            return response()->json([
+
+                'status' => true,
+                'message' => 'Logout successful'
+
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            Log::error('Logout Error: ' . $e->getMessage());
+
+            return response()->json([
+
+                'status' => false,
+                'message' => 'Failed to logout'
+
+            ], 500);
+        }
+    }
+
+    public function profile(Request $request)
+    {
+        try {
+
+            $user = $request->user();
+
+            if (!$user) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated user'
+                ], 401);
+            }
+
+            return response()->json([
+
+                'status' => true,
+                'message' => 'Profile fetched successfully',
+
+                'data' => [
+
+                    'user' => [
+
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone_no' => $user->phone_no,
+                        'user_role' => $user->user_role,
+
+                        'profile_image' => $user->profile_image
+                            ? url('admin-assets/img/users/' . $user->profile_image)
+                            : null,
+
+                        'latitude' => $user->latitude,
+                        'longitude' => $user->longitude,
+
+                        'is_active' => $user->is_active,
+                        'is_available' => $user->is_available,
+
+                        'created_at' => $user->created_at
+                            ? $user->created_at->format('d M Y h:i A')
+                            : null,
+                    ]
+                ]
+
+            ], 200);
+
+        } catch (\Throwable $e) {
+
+            Log::error('Profile Error: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
-                'message' => 'An error occurred while verifying OTP. Please try again later.'
+                'message' => 'Failed to fetch profile'
             ], 500);
         }
     }

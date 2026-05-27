@@ -1,244 +1,738 @@
 @include('admin.includes.header');
+<style>
+
+/* =========================
+   PREMIUM DASHBOARD
+========================= */
+
+.section{
+    padding:10px 5px 40px;
+}
+
+/* DASHBOARD HEADER */
+
+.dashboard-top{
+
+    margin-bottom:28px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.dashboard-title h2{
+
+    font-size:30px;
+    font-weight:800;
+    margin-bottom:6px;
+
+    color:#0f172a;
+}
+
+.dashboard-title p{
+
+    margin:0;
+
+    color:#64748b;
+    font-size:14px;
+}
+
+/* =========================
+   PREMIUM CARDS
+========================= */
+
+.premium-card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border:none !important;
+
+    border-radius:26px !important;
+
+    background:
+        rgba(255,255,255,0.92);
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:
+        0 10px 35px rgba(15,23,42,0.08);
+
+    transition:0.35s ease;
+}
+
+.premium-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:
+        0 18px 45px rgba(14,165,233,0.16);
+}
+
+/* GLOW */
+
+.premium-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:-80px;
+    right:-80px;
+
+    width:180px;
+    height:180px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(rgba(56,189,248,0.22),transparent);
+
+}
+
+/* CARD BODY */
+
+.stats-card{
+
+    padding:24px;
+}
+
+/* ICON */
+
+.stats-icon{
+
+    width:68px;
+    height:68px;
+
+    border-radius:22px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:30px;
+
+    color:#fff;
+
+    margin-bottom:22px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.10);
+}
+
+.icon-blue{
+    background:linear-gradient(135deg,#0284c7,#38bdf8);
+}
+
+.icon-green{
+    background:linear-gradient(135deg,#059669,#34d399);
+}
+
+.icon-orange{
+    background:linear-gradient(135deg,#ea580c,#fb923c);
+}
+
+.icon-red{
+    background:linear-gradient(135deg,#dc2626,#f87171);
+}
+
+.icon-purple{
+    background:linear-gradient(135deg,#7c3aed,#a78bfa);
+}
+
+/* CARD TEXT */
+
+.stats-title{
+
+    font-size:15px;
+    font-weight:600;
+
+    color:#64748b;
+
+    margin-bottom:10px;
+}
+
+.stats-number{
+
+    font-size:34px;
+    font-weight:800;
+
+    color:#0f172a;
+
+    line-height:1;
+}
+
+.stats-bottom{
+
+    margin-top:16px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.stats-badge{
+
+    padding:6px 12px;
+
+    border-radius:50px;
+
+    font-size:12px;
+    font-weight:600;
+
+    background:#eff6ff;
+
+    color:#0284c7;
+}
+
+/* =========================
+   CHART CARD
+========================= */
+
+.chart-card{
+
+    border:none !important;
+
+    border-radius:28px !important;
+
+    overflow:hidden;
+
+    background:#fff;
+
+    box-shadow:
+        0 12px 35px rgba(15,23,42,0.08);
+}
+
+.chart-header{
+
+    padding:24px 28px;
+
+    border-bottom:
+        1px solid rgba(15,23,42,0.06);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.chart-header h4{
+
+    margin:0;
+
+    font-size:22px;
+    font-weight:700;
+
+    color:#0f172a;
+}
+
+.chart-sub{
+
+    color:#64748b;
+    font-size:13px;
+}
+
+/* CHART BODY */
+
+.chart-body{
+
+    padding:25px;
+}
+
+/* =========================
+   TABLE CARD
+========================= */
+
+.table-card{
+
+    border:none !important;
+
+    border-radius:28px !important;
+
+    overflow:hidden;
+
+    background:#fff;
+
+    box-shadow:
+        0 10px 35px rgba(15,23,42,0.07);
+}
+
+.table-card .card-header{
+
+    background:transparent;
+
+    border:none;
+
+    padding:22px 26px 10px;
+}
+
+.table-card .card-header h4{
+
+    margin:0;
+
+    font-size:22px;
+    font-weight:700;
+
+    color:#0f172a;
+}
+
+/* TABLE */
+
+.table{
+
+    margin-bottom:0;
+}
+
+.table thead th{
+
+    border:none !important;
+
+    background:#f8fafc;
+
+    color:#475569;
+
+    font-size:13px;
+    font-weight:700;
+
+    padding:18px;
+}
+
+.table tbody td{
+
+    padding:18px;
+
+    vertical-align:middle;
+
+    border-top:
+        1px solid rgba(15,23,42,0.05);
+}
+
+/* BUTTON */
+
+.btn-premium{
+
+    border:none;
+
+    border-radius:14px;
+
+    padding:10px 18px;
+
+    background:
+        linear-gradient(135deg,#0284c7,#38bdf8);
+
+    color:#fff !important;
+
+    font-weight:600;
+
+    transition:0.3s ease;
+}
+
+.btn-premium:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 12px 22px rgba(56,189,248,0.28);
+}
+
+/* SEARCH */
+
+.premium-search{
+
+    height:46px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#f1f5f9;
+
+    padding:0 16px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1199px){
+
+    .stats-number{
+        font-size:28px;
+    }
+}
+
+@media(max-width:991px){
+
+    .main-content{
+        padding-left:20px !important;
+        padding-right:20px !important;
+    }
+
+    .dashboard-title h2{
+        font-size:24px;
+    }
+
+    .stats-card{
+        padding:22px;
+    }
+
+    .chart-header{
+        padding:20px;
+    }
+}
+
+@media(max-width:768px){
+
+    .section{
+        padding:5px 0 30px;
+    }
+
+    .dashboard-title h2{
+        font-size:22px;
+    }
+
+    .stats-number{
+        font-size:26px;
+    }
+
+    .stats-icon{
+
+        width:58px;
+        height:58px;
+
+        border-radius:18px;
+
+        font-size:24px;
+    }
+
+    .chart-header h4{
+        font-size:18px;
+    }
+
+    .table thead{
+        display:none;
+    }
+
+    .table,
+    .table tbody,
+    .table tr,
+    .table td{
+        display:block;
+        width:100%;
+    }
+
+    .table tr{
+
+        margin-bottom:14px;
+
+        border-radius:18px;
+
+        overflow:hidden;
+
+        background:#fff;
+
+        box-shadow:
+            0 6px 18px rgba(0,0,0,0.05);
+    }
+
+    .table td{
+
+        border:none !important;
+
+        position:relative;
+
+        padding-left:45%;
+    }
+
+    .table td::before{
+
+        content:attr(data-label);
+
+        position:absolute;
+
+        left:18px;
+
+        top:18px;
+
+        font-weight:700;
+
+        color:#0f172a;
+    }
+}
+
+@media(max-width:576px){
+
+    .main-content{
+        padding-left:12px !important;
+        padding-right:12px !important;
+    }
+
+    .stats-card{
+        padding:18px;
+    }
+
+    .stats-title{
+        font-size:14px;
+    }
+
+    .stats-number{
+        font-size:24px;
+    }
+
+    .chart-body{
+        padding:15px;
+    }
+}
+
+</style>
+
  <!-- Main Content -->
       <div class="main-content">
         <section class="section">
-          <div class="row ">
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-              <div class="card">
-                <div class="card-statistic-4">
-                  <div class="align-items-center justify-content-between">
-                    <div class="row ">
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                        <div class="card-content">
-                          <h5 class="font-15">👥 Total Users</h5>
-                          <h2 class="mb-3 font-18">{{ $users }}</h2>
-                          <!-- <p class="mb-0"><span class="col-green">10%</span> Increase</p> -->
-                        </div>
-                      </div>
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                        <div class="banner-img">
-                          <img src="assets/img/banner/1.png" alt="">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+          <!-- =========================
+     DASHBOARD TOP
+========================= -->
+
+<div class="dashboard-top">
+
+    <div class="dashboard-title">
+
+        <h2>
+            Dashboard Overview
+        </h2>
+
+        <p>
+            Real-time analytics & emergency monitoring system
+        </p>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     STATS CARDS
+========================= -->
+
+<div class="row">
+
+    <!-- USERS -->
+    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+        <div class="card premium-card">
+
+            <div class="stats-card">
+
+                <div class="stats-icon icon-blue">
+                    👥
                 </div>
-              </div>
+
+                <div class="stats-title">
+                    Total Users
+                </div>
+
+                <div class="stats-number">
+                    {{ $users }}
+                </div>
+
+                <div class="stats-bottom">
+
+                    <span class="stats-badge">
+                        Active Members
+                    </span>
+
+                </div>
+
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-              <div class="card">
-                <div class="card-statistic-4">
-                  <div class="align-items-center justify-content-between">
-                    <div class="row ">
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                        <div class="card-content">
-                          <h5 class="font-15">🤝 Total Helpers</h5>
-                          <h2 class="mb-3 font-18">{{ $total_helpers}}</h2>
-                          <!-- <p class="mb-0"><span class="col-orange">09%</span> Decrease</p> -->
-                        </div>
-                      </div>
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                        <div class="banner-img">
-                          <img src="assets/img/banner/2.png" alt="">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+        </div>
+
+    </div>
+
+    <!-- HELPERS -->
+    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+        <div class="card premium-card">
+
+            <div class="stats-card">
+
+                <div class="stats-icon icon-green">
+                    🤝
                 </div>
-              </div>
+
+                <div class="stats-title">
+                    Total Helpers
+                </div>
+
+                <div class="stats-number">
+                    {{ $total_helpers }}
+                </div>
+
+                <div class="stats-bottom">
+
+                    <span class="stats-badge">
+                        Support Team
+                    </span>
+
+                </div>
+
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-              <div class="card">
-                <div class="card-statistic-4">
-                  <div class="align-items-center justify-content-between">
-                    <div class="row ">
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                        <div class="card-content">
-                          <h5 class="font-15">👮 Total Police</h5>
-                          <h2 class="mb-3 font-18">{{ $TotalPolices }}</h2>
-                          <!-- <p class="mb-0"><span class="col-green">18%</span>Increase</p> -->
-                        </div>
-                      </div>
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                        <div class="banner-img">
-                          <img src="assets/img/banner/3.png" alt="">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+        </div>
+
+    </div>
+
+    <!-- POLICE -->
+    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+        <div class="card premium-card">
+
+            <div class="stats-card">
+
+                <div class="stats-icon icon-orange">
+                    👮
                 </div>
-              </div>
+
+                <div class="stats-title">
+                    Total Police
+                </div>
+
+                <div class="stats-number">
+                    {{ $TotalPolices }}
+                </div>
+
+                <div class="stats-bottom">
+
+                    <span class="stats-badge">
+                        Security Staff
+                    </span>
+
+                </div>
+
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-              <div class="card">
-                <div class="card-statistic-4">
-                  <div class="align-items-center justify-content-between">
-                    <div class="row ">
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                        <div class="card-content">
-                          <h5 class="font-15" style="white-space: nowrap;">🚨 Active Emergency Signals</h5>
-                          <h2 class="mb-3 font-18 text-danger">{{ $active_emergency_signals }}</h2>
-                          <!-- <p class="mb-0"><span class="col-green">42%</span> Increase</p> -->
-                        </div>
-                      </div>
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                        <div class="banner-img">
-                          <img src="assets/img/banner/4.png" alt="">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+        </div>
+
+    </div>
+
+    <!-- ACTIVE -->
+    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+        <div class="card premium-card">
+
+            <div class="stats-card">
+
+                <div class="stats-icon icon-red">
+                    🚨
                 </div>
-              </div>
+
+                <div class="stats-title">
+                    Active Emergency
+                </div>
+
+                <div class="stats-number text-danger">
+                    {{ $active_emergency_signals ?? '0' }}
+                </div>
+
+                <div class="stats-bottom">
+
+                    <span class="stats-badge">
+                        Live Alerts
+                    </span>
+
+                </div>
+
             </div>
-            <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-              <div class="card">
-                <div class="card-statistic-4">
-                  <div class="align-items-center justify-content-between">
-                    <div class="row ">
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                        <div class="card-content">
-                          <h5 class="font-15" style="white-space: nowrap;">✅ Resolved Emergency Signals</h5>
-                          <h2 class="mb-3 font-18 text-success">{{ $resolved_emergency_signals }}</h2>
-                          <!-- <p class="mb-0"><span class="col-green">42%</span> Increase</p> -->
-                        </div>
-                      </div>
-                      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                        <div class="banner-img">
-                          <img src="assets/img/banner/4.png" alt="">
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
+        </div>
+
+    </div>
+
+    <!-- RESOLVED -->
+    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+        <div class="card premium-card">
+
+            <div class="stats-card">
+
+                <div class="stats-icon icon-purple">
+                    ✅
                 </div>
-              </div>
+
+                <div class="stats-title">
+                    Resolved Signals
+                </div>
+
+                <div class="stats-number text-success">
+                    {{ $resolved_emergency_signals ?? '0' }}
+                </div>
+
+                <div class="stats-bottom">
+
+                    <span class="stats-badge">
+                        Completed Cases
+                    </span>
+
+                </div>
+
             </div>
-          </div>
-          <div class="row">
-            <div class="col-12 col-sm-12 col-lg-12">
-              <div class="card ">
-                <div class="card-header">
-                  <h4>Revenue chart</h4>
-                  <div class="card-header-action">
-                    <div class="dropdown">
-                      <a href="#" data-toggle="dropdown" class="btn btn-warning dropdown-toggle">Options</a>
-                      <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item has-icon"><i class="fas fa-eye"></i> View</a>
-                        <a href="#" class="dropdown-item has-icon"><i class="far fa-edit"></i> Edit</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item has-icon text-danger"><i class="far fa-trash-alt"></i>
-                          Delete</a>
-                      </div>
+
+        </div>
+
+    </div>
+
+</div>
+          
+            
+          <!-- =========================
+     PREMIUM CHART CARD
+========================= -->
+
+<div class="row">
+
+    <div class="col-12 mb-4">
+
+        <div class="card chart-card">
+
+            <div class="chart-header">
+
+                <div>
+
+                    <h4>
+                        Emergency Analytics
+                    </h4>
+
+                    <div class="chart-sub">
+                        Monitor all emergency activities in real-time
                     </div>
-                    <a href="#" class="btn btn-primary">View All</a>
-                  </div>
+
                 </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-lg-9">
-                      <div id="chart1"></div>
-                      <div class="row mb-0">
-                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                          <div class="list-inline text-center">
-                            <div class="list-inline-item p-r-30"><i data-feather="arrow-up-circle"
-                                class="col-green"></i>
-                              <h5 class="m-b-0">$675</h5>
-                              <p class="text-muted font-14 m-b-0">Weekly Earnings</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                          <div class="list-inline text-center">
-                            <div class="list-inline-item p-r-30"><i data-feather="arrow-down-circle"
-                                class="col-orange"></i>
-                              <h5 class="m-b-0">$1,587</h5>
-                              <p class="text-muted font-14 m-b-0">Monthly Earnings</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                          <div class="list-inline text-center">
-                            <div class="list-inline-item p-r-30"><i data-feather="arrow-up-circle"
-                                class="col-green"></i>
-                              <h5 class="mb-0 m-b-0">$45,965</h5>
-                              <p class="text-muted font-14 m-b-0">Yearly Earnings</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-3">
-                      <div class="row mt-5">
-                        <div class="col-7 col-xl-7 mb-3">Total customers</div>
-                        <div class="col-5 col-xl-5 mb-3">
-                          <span class="text-big">8,257</span>
-                          <sup class="col-green">+09%</sup>
-                        </div>
-                        <div class="col-7 col-xl-7 mb-3">Total Income</div>
-                        <div class="col-5 col-xl-5 mb-3">
-                          <span class="text-big">$9,857</span>
-                          <sup class="text-danger">-18%</sup>
-                        </div>
-                        <div class="col-7 col-xl-7 mb-3">Project completed</div>
-                        <div class="col-5 col-xl-5 mb-3">
-                          <span class="text-big">28</span>
-                          <sup class="col-green">+16%</sup>
-                        </div>
-                        <div class="col-7 col-xl-7 mb-3">Total expense</div>
-                        <div class="col-5 col-xl-5 mb-3">
-                          <span class="text-big">$6,287</span>
-                          <sup class="col-green">+09%</sup>
-                        </div>
-                        <div class="col-7 col-xl-7 mb-3">New Customers</div>
-                        <div class="col-5 col-xl-5 mb-3">
-                          <span class="text-big">684</span>
-                          <sup class="col-green">+22%</sup>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
+                <a href="#"
+                   class="btn btn-premium">
+
+                    View Reports
+
+                </a>
+
             </div>
-          </div>
-          <div class="row">
-            <div class="col-12 col-sm-12 col-lg-4">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Chart</h4>
-                </div>
-                <div class="card-body">
-                  <div id="chart4" class="chartsh"></div>
-                </div>
-              </div>
+
+            <div class="chart-body">
+
+                <div id="chart1"></div>
+
             </div>
-            <div class="col-12 col-sm-12 col-lg-4">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Chart</h4>
-                </div>
-                <div class="card-body">
-                  <div class="summary">
-                    <div class="summary-chart active" data-tab-group="summary-tab" id="summary-chart">
-                      <div id="chart3" class="chartsh"></div>
-                    </div>
-                    <div data-tab-group="summary-tab" id="summary-text">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-12 col-sm-12 col-lg-4">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Chart</h4>
-                </div>
-                <div class="card-body">
-                  <div id="chart2" class="chartsh"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+
+        </div>
+
+    </div>
+
+</div> 
+            
+         
           <div class="row">
             <div class="col-12">
               <div class="card">
@@ -490,253 +984,8 @@
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-6 col-lg-12 col-xl-6">
-              <!-- Support tickets -->
-              <div class="card">
-                <div class="card-header">
-                  <h4>Support Ticket</h4>
-                  <form class="card-header-form">
-                    <input type="text" name="search" class="form-control" placeholder="Search">
-                  </form>
-                </div>
-                <div class="card-body">
-                  <div class="support-ticket media pb-1 mb-3">
-                    <img src="assets/img/users/user-1.png" class="user-img mr-2" alt="">
-                    <div class="media-body ml-3">
-                      <div class="badge badge-pill badge-success mb-1 float-right">Feature</div>
-                      <span class="font-weight-bold">#89754</span>
-                      <a href="javascript:void(0)">Please add advance table</a>
-                      <p class="my-1">Hi, can you please add new table for advan...</p>
-                      <small class="text-muted">Created by <span class="font-weight-bold font-13">John
-                          Deo</span>
-                        &nbsp;&nbsp; - 1 day ago</small>
-                    </div>
-                  </div>
-                  <div class="support-ticket media pb-1 mb-3">
-                    <img src="assets/img/users/user-2.png" class="user-img mr-2" alt="">
-                    <div class="media-body ml-3">
-                      <div class="badge badge-pill badge-warning mb-1 float-right">Bug</div>
-                      <span class="font-weight-bold">#57854</span>
-                      <a href="javascript:void(0)">Select item not working</a>
-                      <p class="my-1">please check select item in advance form not work...</p>
-                      <small class="text-muted">Created by <span class="font-weight-bold font-13">Sarah
-                          Smith</span>
-                        &nbsp;&nbsp; - 2 day ago</small>
-                    </div>
-                  </div>
-                  <div class="support-ticket media pb-1 mb-3">
-                    <img src="assets/img/users/user-3.png" class="user-img mr-2" alt="">
-                    <div class="media-body ml-3">
-                      <div class="badge badge-pill badge-primary mb-1 float-right">Query</div>
-                      <span class="font-weight-bold">#85784</span>
-                      <a href="javascript:void(0)">Are you provide template in Angular?</a>
-                      <p class="my-1">can you provide template in latest angular 8.</p>
-                      <small class="text-muted">Created by <span class="font-weight-bold font-13">Ashton Cox</span>
-                        &nbsp;&nbsp; -2 day ago</small>
-                    </div>
-                  </div>
-                  <div class="support-ticket media pb-1 mb-3">
-                    <img src="assets/img/users/user-6.png" class="user-img mr-2" alt="">
-                    <div class="media-body ml-3">
-                      <div class="badge badge-pill badge-info mb-1 float-right">Enhancement</div>
-                      <span class="font-weight-bold">#25874</span>
-                      <a href="javascript:void(0)">About template page load speed</a>
-                      <p class="my-1">Hi, John, can you work on increase page speed of template...</p>
-                      <small class="text-muted">Created by <span class="font-weight-bold font-13">Hasan
-                          Basri</span>
-                        &nbsp;&nbsp; -3 day ago</small>
-                    </div>
-                  </div>
-                </div>
-                <a href="javascript:void(0)" class="card-footer card-link text-center small ">View
-                  All</a>
-              </div>
-              <!-- Support tickets -->
-            </div>
-            <div class="col-md-6 col-lg-12 col-xl-6">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Projects Payments</h4>
-                </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Client Name</th>
-                          <th>Date</th>
-                          <th>Payment Method</th>
-                          <th>Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td>John Doe </td>
-                          <td>11-08-2018</td>
-                          <td>NEFT</td>
-                          <td>$258</td>
-                        </tr>
-                        <tr>
-                          <td>2</td>
-                          <td>Cara Stevens
-                          </td>
-                          <td>15-07-2018</td>
-                          <td>PayPal</td>
-                          <td>$125</td>
-                        </tr>
-                        <tr>
-                          <td>3</td>
-                          <td>
-                            Airi Satou
-                          </td>
-                          <td>25-08-2018</td>
-                          <td>RTGS</td>
-                          <td>$287</td>
-                        </tr>
-                        <tr>
-                          <td>4</td>
-                          <td>
-                            Angelica Ramos
-                          </td>
-                          <td>01-05-2018</td>
-                          <td>CASH</td>
-                          <td>$170</td>
-                        </tr>
-                        <tr>
-                          <td>5</td>
-                          <td>
-                            Ashton Cox
-                          </td>
-                          <td>18-04-2018</td>
-                          <td>NEFT</td>
-                          <td>$970</td>
-                        </tr>
-                        <tr>
-                          <td>6</td>
-                          <td>
-                            John Deo
-                          </td>
-                          <td>22-11-2018</td>
-                          <td>PayPal</td>
-                          <td>$854</td>
-                        </tr>
-                        <tr>
-                          <td>7</td>
-                          <td>
-                            Hasan Basri
-                          </td>
-                          <td>07-09-2018</td>
-                          <td>Cash</td>
-                          <td>$128</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          
         </section>
-        <div class="settingSidebar">
-          <a href="javascript:void(0)" class="settingPanelToggle"> <i class="fa fa-spin fa-cog"></i>
-          </a>
-          <div class="settingSidebar-body ps-container ps-theme-default">
-            <div class=" fade show active">
-              <div class="setting-panel-header">Setting Panel
-              </div>
-              <div class="p-15 border-bottom">
-                <h6 class="font-medium m-b-10">Select Layout</h6>
-                <div class="selectgroup layout-color w-50">
-                  <label class="selectgroup-item">
-                    <input type="radio" name="value" value="1" class="selectgroup-input-radio select-layout" checked>
-                    <span class="selectgroup-button">Light</span>
-                  </label>
-                  <label class="selectgroup-item">
-                    <input type="radio" name="value" value="2" class="selectgroup-input-radio select-layout">
-                    <span class="selectgroup-button">Dark</span>
-                  </label>
-                </div>
-              </div>
-              <div class="p-15 border-bottom">
-                <h6 class="font-medium m-b-10">Sidebar Color</h6>
-                <div class="selectgroup selectgroup-pills sidebar-color">
-                  <label class="selectgroup-item">
-                    <input type="radio" name="icon-input" value="1" class="selectgroup-input select-sidebar">
-                    <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                      data-original-title="Light Sidebar"><i class="fas fa-sun"></i></span>
-                  </label>
-                  <label class="selectgroup-item">
-                    <input type="radio" name="icon-input" value="2" class="selectgroup-input select-sidebar" checked>
-                    <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                      data-original-title="Dark Sidebar"><i class="fas fa-moon"></i></span>
-                  </label>
-                </div>
-              </div>
-              <div class="p-15 border-bottom">
-                <h6 class="font-medium m-b-10">Color Theme</h6>
-                <div class="theme-setting-options">
-                  <ul class="choose-theme list-unstyled mb-0">
-                    <li title="white" class="active">
-                      <div class="white"></div>
-                    </li>
-                    <li title="cyan">
-                      <div class="cyan"></div>
-                    </li>
-                    <li title="black">
-                      <div class="black"></div>
-                    </li>
-                    <li title="purple">
-                      <div class="purple"></div>
-                    </li>
-                    <li title="orange">
-                      <div class="orange"></div>
-                    </li>
-                    <li title="green">
-                      <div class="green"></div>
-                    </li>
-                    <li title="red">
-                      <div class="red"></div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div class="p-15 border-bottom">
-                <div class="theme-setting-options">
-                  <label class="m-b-0">
-                    <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                      id="mini_sidebar_setting">
-                    <span class="custom-switch-indicator"></span>
-                    <span class="control-label p-l-10">Mini Sidebar</span>
-                  </label>
-                </div>
-              </div>
-              <div class="p-15 border-bottom">
-                <div class="theme-setting-options">
-                  <label class="m-b-0">
-                    <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                      id="sticky_header_setting">
-                    <span class="custom-switch-indicator"></span>
-                    <span class="control-label p-l-10">Sticky Header</span>
-                  </label>
-                </div>
-              </div>
-              <div class="mt-4 mb-4 p-3 align-center rt-sidebar-last-ele">
-                <a href="#" class="btn btn-icon icon-left btn-primary btn-restore-theme">
-                  <i class="fas fa-undo"></i> Restore Default
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- <footer class="main-footer">
-        <div class="footer-left">
-          <a href="templateshub.net">Templateshub</a></a>
-        </div>
-        <div class="footer-right">
-        </div>
-      </footer> -->
+
+        
 @include('admin.includes.footer');

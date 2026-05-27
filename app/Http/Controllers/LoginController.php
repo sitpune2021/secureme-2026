@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
+
+
     // Show Admin login page
     public function AdminLogin(Request $request)
     {
@@ -47,4 +49,6 @@ class LoginController extends Controller
 
         return redirect()->route('admin.admin-login')->with('success', 'Logged out successfully');
     }
+
+    
 }
