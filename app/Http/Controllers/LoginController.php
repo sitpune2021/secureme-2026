@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
+
+
     // Show Admin login page
     public function AdminLogin(Request $request)
     {
@@ -18,32 +20,39 @@ class LoginController extends Controller
 
     public function SaveLogin(Request $request)
     {
-        try {
-            $request->validate([
-                'email'    => 'required|email',
-                'password' => 'required|min:6',
-            ]);
+        $request->validate([
 
-            $admin = DB::table('admins')->where('email', $request->email)->first();
+            'email'    => 'required|email',
 
-            $credentials = [
-                'email'    => $request->email,
-                'password' => $request->password,
-            ];
+            'password' => 'required|min:6',
 
-            if (Auth::guard('admin')->attempt($credentials)) {
+        ]);
 
-                $request->session()->regenerate();
-                return redirect()->intended(route('admin.dashboard'))->with('success', 'Welcome back, Admin!');
-            }
-            return back()->withErrors(['email' => 'Invalid credentials']);
-        } catch (\Throwable $e) {
-            dd($e);
-            return response()->json([
-                'status'  => false,
-                'message' => 'An error occurred during the login process 1.',
-            ], 500);
+        $credentials = [
+
+            'email' => $request->email,
+
+            'password' => $request->password,
+
+            'user_role' => 'admin'
+
+        ];
+
+        if (Auth::attempt($credentials)) {
+
+            $request->session()->regenerate();
+
+            return redirect()->route('admin.dashboard')
+
+                ->with('success', 'Welcome back Admin!');
+
         }
+
+        return back()->withErrors([
+
+            'email' => 'Invalid admin credentials'
+
+        ]);
     }
 
     public function Logout(Request $request)
@@ -55,4 +64,6 @@ class LoginController extends Controller
 
         return redirect()->route('admin.admin-login')->with('success', 'Logged out successfully');
     }
+
+    
 }

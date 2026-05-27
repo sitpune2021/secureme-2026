@@ -13,45 +13,42 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
+
         'community_id',
-        'user_role',
         'name',
         'email',
-        'password',
         'phone_no',
-        'fcm_token',
+        'profile_image',
+        'password',
+        'user_role',
         'otp',
         'otp_expires_at',
-        'profile_image',
         'is_available',
         'latitude',
         'longitude',
+        'is_active',
         'last_location_update',
+        'fcm_token',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+   
     protected $casts = [
+
+        'otp_expires_at' => 'datetime',
+        'last_location_update' => 'datetime',
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+
+        'is_active' => 'boolean',
+        'is_available' => 'boolean',
+
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
+
 }
