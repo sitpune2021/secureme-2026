@@ -21,22 +21,37 @@ class LoginController extends Controller
     public function SaveLogin(Request $request)
     {
         $request->validate([
+
             'email'    => 'required|email',
+
             'password' => 'required|min:6',
+
         ]);
 
-        $credentials = $request->only('email', 'password');
+        $credentials = [
+
+            'email' => $request->email,
+
+            'password' => $request->password,
+
+            'user_role' => 'admin'
+
+        ];
 
         if (Auth::attempt($credentials)) {
 
             $request->session()->regenerate();
 
             return redirect()->route('admin.dashboard')
-                ->with('success', 'Welcome back!');
+
+                ->with('success', 'Welcome back Admin!');
+
         }
 
         return back()->withErrors([
-            'email' => 'Invalid credentials'
+
+            'email' => 'Invalid admin credentials'
+
         ]);
     }
 

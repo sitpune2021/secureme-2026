@@ -1,4 +1,5 @@
 @include('admin.includes.header');
+
 <style>
 
 /* =========================
@@ -490,502 +491,434 @@
 
 </style>
 
- <!-- Main Content -->
-      <div class="main-content">
+<style>
+
+.table td,
+.table th{
+    vertical-align: middle !important;
+}
+
+.object-fit-cover{
+    object-fit: cover;
+}
+
+.card{
+    border-radius: 18px;
+}
+
+.table-responsive{
+    border-radius: 14px;
+}
+
+@media(max-width:768px){
+
+    .card-header{
+        gap:10px;
+    }
+
+    .card-header-form{
+        width:100%;
+    }
+
+    .card-header-form input{
+        width:100%;
+    }
+
+    .table{
+        min-width:900px;
+    }
+
+}
+
+</style>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
         <section class="section">
-          <!-- =========================
-     DASHBOARD TOP
-========================= -->
 
-<div class="dashboard-top">
+            <!-- =========================
+                DASHBOARD TOP
+            ========================= -->
 
-    <div class="dashboard-title">
+            <div class="dashboard-top">
 
-        <h2>
-            Dashboard Overview
-        </h2>
+                <div class="dashboard-title">
 
-        <p>
-            Real-time analytics & emergency monitoring system
-        </p>
+                    <h2>
+                        Dashboard Overview
+                    </h2>
 
-    </div>
-
-</div>
-
-<!-- =========================
-     STATS CARDS
-========================= -->
-
-<div class="row">
-
-    <!-- USERS -->
-    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
-        <div class="card premium-card">
-
-            <div class="stats-card">
-
-                <div class="stats-icon icon-blue">
-                    👥
-                </div>
-
-                <div class="stats-title">
-                    Total Users
-                </div>
-
-                <div class="stats-number">
-                    {{ $users }}
-                </div>
-
-                <div class="stats-bottom">
-
-                    <span class="stats-badge">
-                        Active Members
-                    </span>
+                    <p>
+                        Real-time analytics & emergency monitoring system
+                    </p>
 
                 </div>
 
             </div>
 
-        </div>
+            <!-- =========================
+                STATS CARDS
+            ========================= -->
 
-    </div>
+            <div class="row">
 
-    <!-- HELPERS -->
-    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+                <!-- USERS -->
+                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
 
-        <div class="card premium-card">
+                    <div class="card premium-card">
 
-            <div class="stats-card">
+                        <div class="stats-card">
 
-                <div class="stats-icon icon-green">
-                    🤝
-                </div>
+                            <div class="stats-icon icon-blue">
+                                👥
+                            </div>
 
-                <div class="stats-title">
-                    Total Helpers
-                </div>
+                            <div class="stats-title">
+                                Total Users
+                            </div>
 
-                <div class="stats-number">
-                    {{ $total_helpers }}
-                </div>
+                            <div class="stats-number">
+                                {{ $users }}
+                            </div>
 
-                <div class="stats-bottom">
+                            <div class="stats-bottom">
 
-                    <span class="stats-badge">
-                        Support Team
-                    </span>
+                                <span class="stats-badge">
+                                    Active Members
+                                </span>
 
-                </div>
+                            </div>
 
-            </div>
+                        </div>
 
-        </div>
-
-    </div>
-
-    <!-- POLICE -->
-    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
-        <div class="card premium-card">
-
-            <div class="stats-card">
-
-                <div class="stats-icon icon-orange">
-                    👮
-                </div>
-
-                <div class="stats-title">
-                    Total Police
-                </div>
-
-                <div class="stats-number">
-                    {{ $TotalPolices }}
-                </div>
-
-                <div class="stats-bottom">
-
-                    <span class="stats-badge">
-                        Security Staff
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ACTIVE -->
-    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
-        <div class="card premium-card">
-
-            <div class="stats-card">
-
-                <div class="stats-icon icon-red">
-                    🚨
-                </div>
-
-                <div class="stats-title">
-                    Active Emergency
-                </div>
-
-                <div class="stats-number text-danger">
-                    {{ $active_emergency_signals ?? '0' }}
-                </div>
-
-                <div class="stats-bottom">
-
-                    <span class="stats-badge">
-                        Live Alerts
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- RESOLVED -->
-    <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
-        <div class="card premium-card">
-
-            <div class="stats-card">
-
-                <div class="stats-icon icon-purple">
-                    ✅
-                </div>
-
-                <div class="stats-title">
-                    Resolved Signals
-                </div>
-
-                <div class="stats-number text-success">
-                    {{ $resolved_emergency_signals ?? '0' }}
-                </div>
-
-                <div class="stats-bottom">
-
-                    <span class="stats-badge">
-                        Completed Cases
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-          
-            
-          <!-- =========================
-     PREMIUM CHART CARD
-========================= -->
-
-<div class="row">
-
-    <div class="col-12 mb-4">
-
-        <div class="card chart-card">
-
-            <div class="chart-header">
-
-                <div>
-
-                    <h4>
-                        Emergency Analytics
-                    </h4>
-
-                    <div class="chart-sub">
-                        Monitor all emergency activities in real-time
                     </div>
 
                 </div>
 
-                <a href="#"
-                   class="btn btn-premium">
+                <!-- HELPERS -->
+                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
 
-                    View Reports
+                    <div class="card premium-card">
 
-                </a>
+                        <div class="stats-card">
 
-            </div>
+                            <div class="stats-icon icon-green">
+                                🤝
+                            </div>
 
-            <div class="chart-body">
+                            <div class="stats-title">
+                                Total Helpers
+                            </div>
 
-                <div id="chart1"></div>
+                            <div class="stats-number">
+                                {{ $total_helpers }}
+                            </div>
 
-            </div>
+                            <div class="stats-bottom">
 
-        </div>
+                                <span class="stats-badge">
+                                    Support Team
+                                </span>
 
-    </div>
+                            </div>
 
-</div> 
-            
-         
-          <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Assign Task Table</h4>
-                  <div class="card-header-form">
-                    <form>
-                      <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search">
-                        <div class="input-group-btn">
-                          <button class="btn btn-primary"><i class="fas fa-search"></i></button>
                         </div>
-                      </div>
-                    </form>
-                  </div>
+
+                    </div>
+
                 </div>
-                <div class="card-body p-0">
-                  <div class="table-responsive">
-                    <table class="table table-striped">
-                      <tr>
-                        <th class="text-center">
-                          <div class="custom-checkbox custom-checkbox-table custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" data-checkbox-role="dad"
-                              class="custom-control-input" id="checkbox-all">
-                            <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </th>
-                        <th>Task Name</th>
-                        <th>Members</th>
-                        <th>Task Status</th>
-                        <th>Assigh Date</th>
-                        <th>Due Date</th>
-                        <th>Priority</th>
-                        <th>Action</th>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-1">
-                            <label for="checkbox-1" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Create a mobile app</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-8.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Wildan Ahdian"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-9.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-10.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Sarah Smith"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+4</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">50%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar bg-success" data-width="50%"></div>
-                          </div>
-                        </td>
-                        <td>2018-01-20</td>
-                        <td>2019-05-28</td>
-                        <td>
-                          <div class="badge badge-success">Low</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-2">
-                            <label for="checkbox-2" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Redesign homepage</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-1.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Wildan Ahdian"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-2.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+2</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">40%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar bg-danger" data-width="40%"></div>
-                          </div>
-                        </td>
-                        <td>2017-07-14</td>
-                        <td>2018-07-21</td>
-                        <td>
-                          <div class="badge badge-danger">High</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-3">
-                            <label for="checkbox-3" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Backup database</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-3.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Wildan Ahdian"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-4.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-5.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Sarah Smith"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+3</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">55%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar bg-purple" data-width="55%"></div>
-                          </div>
-                        </td>
-                        <td>2019-07-25</td>
-                        <td>2019-08-17</td>
-                        <td>
-                          <div class="badge badge-info">Average</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-4">
-                            <label for="checkbox-4" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Android App</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-7.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-8.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Sarah Smith"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+4</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">70%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar" data-width="70%"></div>
-                          </div>
-                        </td>
-                        <td>2018-04-15</td>
-                        <td>2019-07-19</td>
-                        <td>
-                          <div class="badge badge-success">Low</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-5">
-                            <label for="checkbox-5" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Logo Design</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-9.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Wildan Ahdian"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-10.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-2.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Sarah Smith"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+2</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">45%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar bg-cyan" data-width="45%"></div>
-                          </div>
-                        </td>
-                        <td>2017-02-24</td>
-                        <td>2018-09-06</td>
-                        <td>
-                          <div class="badge badge-danger">High</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                      <tr>
-                        <td class="p-0 text-center">
-                          <div class="custom-checkbox custom-control">
-                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input"
-                              id="checkbox-6">
-                            <label for="checkbox-6" class="custom-control-label">&nbsp;</label>
-                          </div>
-                        </td>
-                        <td>Ecommerce website</td>
-                        <td class="text-truncate">
-                          <ul class="list-unstyled order-list m-b-0 m-b-0">
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-8.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Wildan Ahdian"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-9.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="John Deo"></li>
-                            <li class="team-member team-member-sm"><img class="rounded-circle"
-                                src="assets/img/users/user-10.png" alt="user" data-toggle="tooltip" title=""
-                                data-original-title="Sarah Smith"></li>
-                            <li class="avatar avatar-sm"><span class="badge badge-primary">+4</span></li>
-                          </ul>
-                        </td>
-                        <td class="align-middle">
-                          <div class="progress-text">30%</div>
-                          <div class="progress" data-height="6">
-                            <div class="progress-bar bg-orange" data-width="30%"></div>
-                          </div>
-                        </td>
-                        <td>2018-01-20</td>
-                        <td>2019-05-28</td>
-                        <td>
-                          <div class="badge badge-info">Average</div>
-                        </td>
-                        <td><a href="#" class="btn btn-outline-primary">Detail</a></td>
-                      </tr>
-                    </table>
-                  </div>
+
+                <!-- POLICE -->
+                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+                    <div class="card premium-card">
+
+                        <div class="stats-card">
+
+                            <div class="stats-icon icon-orange">
+                                👮
+                            </div>
+
+                            <div class="stats-title">
+                                Total Police
+                            </div>
+
+                            <div class="stats-number">
+                                {{ $TotalPolices }}
+                            </div>
+
+                            <div class="stats-bottom">
+
+                                <span class="stats-badge">
+                                    Security Staff
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
-              </div>
+
+                <!-- ACTIVE -->
+                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+                    <div class="card premium-card">
+
+                        <div class="stats-card">
+
+                            <div class="stats-icon icon-red">
+                                🚨
+                            </div>
+
+                            <div class="stats-title">
+                                Active Emergency
+                            </div>
+
+                            <div class="stats-number text-danger">
+                                {{ $active_emergency_signals ?? '0' }}
+                            </div>
+
+                            <div class="stats-bottom">
+
+                                <span class="stats-badge">
+                                    Live Alerts
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- RESOLVED -->
+                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
+
+                    <div class="card premium-card">
+
+                        <div class="stats-card">
+
+                            <div class="stats-icon icon-purple">
+                                ✅
+                            </div>
+
+                            <div class="stats-title">
+                                Resolved Signals
+                            </div>
+
+                            <div class="stats-number text-success">
+                                {{ $resolved_emergency_signals ?? '0' }}
+                            </div>
+
+                            <div class="stats-bottom">
+
+                                <span class="stats-badge">
+                                    Completed Cases
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-          </div>
+               
+         
+            <div class="row">
+                <div class="col-12">
+
+                    <div class="card shadow-sm border-0">
+
+                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+
+                            <h4 class="mb-2 mb-md-0">
+                                Helper Customer List
+                            </h4>
+
+                            <div class="card-header-form">
+
+                                <input type="text"
+                                    id="helperSearch"
+                                    class="form-control"
+                                    placeholder="Search helper...">
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-body p-0">
+
+                            <div class="table-responsive">
+
+                                <table class="table table-striped table-hover align-middle mb-0">
+
+                                    <thead class="bg-light">
+
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Profile</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="helperTable">
+
+                                        @forelse($helpers as $helper)
+
+                                            <tr>
+
+                                                <td>
+                                                    {{ $loop->iteration }}
+                                                </td>
+
+                                                <td>
+
+                                                    @if($helper->profile_image)
+
+                                                        <img src="{{ asset('admin-assets/img/users/' . $helper->profile_image) }}"
+                                                            width="45"
+                                                            height="45"
+                                                            class="rounded-circle object-fit-cover border">
+
+                                                    @else
+
+                                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($helper->name) }}"
+                                                            width="45"
+                                                            height="45"
+                                                            class="rounded-circle border">
+
+                                                    @endif
+
+                                                </td>
+
+                                                <td>
+                                                    <strong>{{ $helper->name }}</strong>
+                                                </td>
+
+                                                <td class="text-break">
+                                                    {{ $helper->email }}
+                                                </td>
+
+                                                <td>
+                                                    {{ $helper->phone_no ?? 'N/A' }}
+                                                </td>
+
+                                                <td>
+
+                                                    @if($helper->user_role == 'police')
+
+                                                        <span class="badge badge-primary">
+                                                            Police
+                                                        </span>
+
+                                                    @elseif($helper->user_role == 'Manager')
+
+                                                        <span class="badge badge-success">
+                                                            Manager
+                                                        </span>
+
+                                                    @elseif($helper->user_role == 'Gym_Person')
+
+                                                        <span class="badge badge-warning">
+                                                            Gym Person
+                                                        </span>
+
+                                                    @else
+
+                                                        <span class="badge badge-dark">
+                                                            Defense
+                                                        </span>
+
+                                                    @endif
+
+                                                </td>
+
+                                                <td>
+
+                                                    @if($helper->is_active == 1)
+
+                                                        <span class="badge badge-success">
+                                                            Active
+                                                        </span>
+
+                                                    @else
+
+                                                        <span class="badge badge-danger">
+                                                            Inactive
+                                                        </span>
+
+                                                    @endif
+
+                                                </td>
+
+                                                <td>
+                                                    {{ \Carbon\Carbon::parse($helper->created_at)->format('d M Y') }}
+                                                </td>
+
+                                            </tr>
+
+                                        @empty
+
+                                            <tr>
+
+                                                <td colspan="8" class="text-center py-4">
+                                                    No helper users found
+                                                </td>
+
+                                            </tr>
+
+                                        @endforelse
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
           
         </section>
+        </div>
 
-        
+
+    <script>
+
+        document.getElementById('helperSearch').addEventListener('keyup', function () {
+
+            let value = this.value.toLowerCase();
+
+            let rows = document.querySelectorAll('#helperTable tr');
+
+            rows.forEach(row => {
+
+                row.style.display =
+                    row.innerText.toLowerCase().includes(value)
+                        ? ''
+                        : 'none';
+
+            });
+
+        });
+
+    </script>
+    
+    
 @include('admin.includes.footer');
