@@ -11,8 +11,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Shekhar Mudme',
-            'email' => 'shekharmudmesitsolution@gmail.com',
+            'name' => 'Shekhar',
+            'email' => 'shekhar@gmail.com',
             'password' => Hash::make('password123'),
             'user_role' => 'admin',
         ]);

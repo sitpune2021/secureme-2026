@@ -337,7 +337,7 @@ class AuthController extends Controller
         }
     }
 
-   public function logout(Request $request)
+    public function logout(Request $request)
     {
         try {
 
@@ -432,87 +432,151 @@ class AuthController extends Controller
         }
     }
 
-    public function getUserRole(Request $request)
-    {
-        try {
-            return response()->json([
-                'status' => true,
-                'user_role' => $request->user()->user_role
-            ], 200);
-        } catch (\Throwable $th) {
-            Log::error('Error fetching user role: ' . $th->getMessage());
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while fetching user role. Please try again later.'
-            ], 500);
-        }
-    }
-
-    public function getUserProfile(Request $request)
-    {
-        try {
-            $user = $request->user();
-            return response()->json([
-                'status' => true,
-                'data' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone_no' => $user->phone_no,
-                    'user_role' => $user->user_role,
-                    'profile_image' => $user->profile_image ? url($user->profile_image) : null,
-                ]
-            ], 200);
-        } catch (\Throwable $th) {
-            Log::error('Error fetching user profile: ' . $th->getMessage());
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while fetching user profile. Please try again later.'
-            ], 500);
-        }
-    }
-
     public function updateProfile(Request $request)
     {
         try {
+
             $user = $request->user();
 
+            if (!$user) {
+
+                return response()->json([
+
+                    'status' => false,
+                    'message' => 'Unauthenticated user'
+
+                ], 401);
+            }
+
             $validator = Validator::make($request->all(), [
-                'name'     => 'required|string|max:255',
-                'email'    => 'required|email|unique:users,email,' . $user->id,
-                'phone_no' => 'required|string|min:10|unique:users,phone_no,' . $user->id,
+
+                'name' => 'nullable|string|max:255',
+
+                'email' => 'nullable|email|unique:users,email,' . $user->id,
+
+                'phone_no' => 'nullable|string|min:10|unique:users,phone_no,' . $user->id,
+
+                'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+
             ]);
 
             if ($validator->fails()) {
+
                 return response()->json([
+
                     'status' => false,
                     'message' => $validator->errors()->first()
+
                 ], 422);
             }
 
-            $user->update([
-                'name'     => $request->name,
-                'email'    => strtolower($request->email),
-                'phone_no' => $request->phone_no,
-            ]);
+            // Update Name
+            if ($request->filled('name')) {
+
+                $user->name = $request->name;
+            }
+
+            // Update Email
+            if ($request->filled('email')) {
+
+                $user->email = strtolower(trim($request->email));
+            }
+
+            // Update Phone
+            if ($request->filled('phone_no')) {
+
+                $user->phone_no = $request->phone_no;
+            }
+
+            // Update Profile Image
+            if ($request->hasFile('profile_image')) {
+
+                $image = $request->file('profile_image');
+
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $image->move(public_path('admin-assets/img/users'), $imageName);
+
+                $user->profile_image = $imageName;
+            }
+
+            $user->save();
 
             return response()->json([
+
                 'status' => true,
+
                 'message' => 'Profile updated successfully',
+
                 'data' => [
-                    'userId' => $user->id,
+
+                    'id' => $user->id,
+
                     'name' => $user->name,
+
                     'email' => $user->email,
+
                     'phone_no' => $user->phone_no,
-                    'user_role' => $user->user_role
+
+                    'user_role' => $user->user_role,
+
+                    'profile_image' => $user->profile_image
+                        ? url('admin-assets/img/users/' . $user->profile_image)
+                        : null,
                 ]
+
             ], 200);
+
         } catch (\Throwable $th) {
-            Log::error('Update profile error: ' . $th->getMessage());
+
+            Log::error('Update Profile Error: ' . $th->getMessage());
 
             return response()->json([
+
                 'status' => false,
                 'message' => 'Something went wrong while updating profile'
+
+            ], 500);
+        }
+    }
+
+    public function getUserRole(Request $request)
+    {
+        try {
+
+            $user = $request->user();
+
+            if (!$user) {
+
+                return response()->json([
+
+                    'status' => false,
+                    'message' => 'Unauthenticated user'
+
+                ], 401);
+            }
+
+            return response()->json([
+
+                'status' => true,
+
+                'data' => [
+
+                    'user_role' => $user->user_role
+
+                ]
+
+            ], 200);
+
+        } catch (\Throwable $th) {
+
+            Log::error('Get User Role Error: ' . $th->getMessage());
+
+            return response()->json([
+
+                'status' => false,
+                'message' => 'Something went wrong'
+
             ], 500);
         }
     }
