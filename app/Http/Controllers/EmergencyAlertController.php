@@ -7,8 +7,17 @@ use App\Models\EmergencyAlert;
 
 class EmergencyAlertController extends Controller
 {
-    // STORE ALERT
 
+    // ADMIN VIEW
+    public function index()
+    {
+        $alerts = EmergencyAlert::latest()->get();
+
+        return view('admin.emergency-alerts',
+            compact('alerts'));
+    }
+
+    // STORE ALERT
     public function store(Request $request)
     {
         EmergencyAlert::create([
@@ -28,18 +37,7 @@ class EmergencyAlertController extends Controller
             'Emergency Alert Sent Successfully');
     }
 
-    // ADMIN VIEW
-
-    public function index()
-    {
-        $alerts = EmergencyAlert::latest()->get();
-
-        return view('admin.emergency-alerts',
-            compact('alerts'));
-    }
-
     // UPDATE STATUS
-
     public function updateStatus(Request $request, $id)
     {
         $alert = EmergencyAlert::findOrFail($id);
@@ -51,4 +49,6 @@ class EmergencyAlertController extends Controller
         return back()->with('success',
             'Status Updated');
     }
+
+
 }

@@ -33,6 +33,7 @@ Route::post('/reset-password',
     [ForgotPasswordController::class, 'resetPassword'])
     ->name('password.update');
 
+
 /// Protected Admin Routes
 Route::middleware(['auth'])->group(function () 
 {
@@ -44,20 +45,20 @@ Route::middleware(['auth'])->group(function ()
     Route::get('/admin/users-details/{id}', [UserController::class, 'UsersDetails'])->name('admin.users-details');
 
     
-Route::get('/send-emergency', function () {
+    Route::get('/send-emergency', function () {
 
-    return view('send-emergency');
+        return view('send-emergency');
 
-});
+    });
 
-Route::post('/store-emergency',
-    [EmergencyAlertController::class, 'store']);
+    Route::post('/store-emergency',
+        [EmergencyAlertController::class, 'store']);
 
-Route::get('/admin/emergency-alerts',
-    [EmergencyAlertController::class, 'index']);
+    Route::get('/admin/emergency-alerts',
+        [EmergencyAlertController::class, 'index']);
 
-Route::post('/update-alert-status/{id}',
-    [EmergencyAlertController::class, 'updateStatus']);
+    Route::post('/update-alert-status/{id}',
+        [EmergencyAlertController::class, 'updateStatus']);
 
     
     // Emergency signal Module
@@ -66,9 +67,11 @@ Route::post('/update-alert-status/{id}',
     // Emergency responses Module
     Route::get('/admin/all-emergency-responses', [EmergencyResponsesController::class, 'AllEmergencyResponsesList'])->name('admin.all-emergency-responses');
 
+
     // Routes for Instant emergency groups Module
     Route::get('/admin/instant-emergency-groups', [InstantEmergencyGroupController::class, 'InstantEmergencyGroups'])->name('admin.instant-emergency-groups');
 
+    
     // Routes for Reports Module
     Route::get('/admin/reports-and-logs', [ReportController::class, 'ReportsAndLogsList'])->name('admin.reports-and-logs');
 
