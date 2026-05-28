@@ -1,193 +1,611 @@
 @include('admin.includes.header')
-<!-- Main Content -->
-<div class="main-content">
-    <section class="section">
-    <div class="section-body">
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="mt-2"><i class="fas fa-users text-primary mr-2"></i> Instant Emergency Groups</h4>
-                        <span class="badge badge-info">Total Groups: 12</span>
-                    </div>
-                    <hr class="mt-0 mb-0">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Group ID</th>
-                                        <th>Created At</th>
-                                        <th>Status</th>
-                                        <th>Members</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Example Row -->
-                                    <tr>
-                                        <td>1</td>
-                                        <td><span class="badge badge-primary">GRP-1023</span></td>
-                                        <td>2025-08-21 14:30</td>
-                                        <td><span class="badge badge-success">Active</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-info" data-toggle="collapse" data-target="#members1">
-                                                View Members
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr id="members1" class="collapse">
-                                        <td colspan="6">
-                                            <div class="p-3 bg-light rounded">
-                                                <strong>Helpers:</strong> John Doe, Alex Smith <br>
-                                                <strong>Police:</strong> Officer Clark <br>
-                                                <strong>Family:</strong> Jane Doe
-                                            </div>
-                                        </td>
-                                    </tr>
 
-                                    <!-- Another Example Row -->
-                                    <tr>
-                                        <td>2</td>
-                                        <td><span class="badge badge-primary">GRP-1024</span></td>
-                                        <td>2025-08-21 15:10</td>
-                                        <td><span class="badge badge-secondary">Resolved</span></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-info" data-toggle="collapse" data-target="#members2">
-                                                View Members
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></button>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr id="members2" class="collapse">
-                                        <td colspan="6">
-                                            <div class="p-3 bg-light rounded">
-                                                <strong>Helpers:</strong> Michael Brown <br>
-                                                <strong>Police:</strong> Officer Miller <br>
-                                                <strong>Family:</strong> Sarah Brown
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+<style>
+
+    .groups-card{
+        border:none;
+        border-radius:24px;
+        overflow:hidden;
+        background:#fff;
+        box-shadow:0 10px 35px rgba(0,0,0,.08);
+    }
+
+    .groups-header{
+        padding:24px;
+        border-bottom:1px solid #eef2ff;
+        background:linear-gradient(135deg,#ffffff,#f8fbff);
+    }
+
+    .title-text{
+        font-size:24px;
+        font-weight:700;
+        color:#1e293b;
+    }
+
+    .sub-text{
+        color:#64748b;
+        font-size:14px;
+    }
+
+    .search-box{
+        position:relative;
+        width:100%;
+        max-width:340px;
+    }
+
+    .search-box input{
+        width:100%;
+        height:52px;
+        border:none;
+        border-radius:16px;
+        background:#f8fafc;
+        padding-left:52px;
+        padding-right:15px;
+        font-size:14px;
+        box-shadow:inset 0 0 0 1px #e2e8f0;
+    }
+
+    .search-box input:focus{
+        outline:none;
+        background:#fff;
+        box-shadow:
+            0 0 0 4px rgba(103,119,239,.10),
+            inset 0 0 0 1px #6777ef;
+    }
+
+    .search-icon{
+        position:absolute;
+        left:18px;
+        top:50%;
+        transform:translateY(-50%);
+        color:#6777ef;
+        font-size:16px;
+    }
+
+    .custom-table{
+        margin:0;
+        min-width:1000px;
+    }
+
+    .custom-table thead{
+        background:#f8fafc;
+    }
+
+    .custom-table thead th{
+        border:none;
+        padding:18px 16px;
+        font-size:12px;
+        text-transform:uppercase;
+        color:#64748b;
+        font-weight:700;
+        white-space:nowrap;
+    }
+
+    .custom-table tbody td{
+        padding:18px 16px;
+        vertical-align:middle;
+        border-top:1px solid #f1f5f9;
+        white-space:nowrap;
+    }
+
+    .custom-table tbody tr:hover{
+        background:#f8fbff;
+    }
+
+    .group-badge{
+        background:#6777ef;
+        color:#fff;
+        padding:7px 14px;
+        border-radius:30px;
+        font-size:12px;
+        font-weight:700;
+    }
+
+    .status-active{
+        background:#dcfce7;
+        color:#16a34a;
+        padding:7px 14px;
+        border-radius:30px;
+        font-size:12px;
+        font-weight:700;
+    }
+
+    .status-resolved{
+        background:#fee2e2;
+        color:#dc2626;
+        padding:7px 14px;
+        border-radius:30px;
+        font-size:12px;
+        font-weight:700;
+    }
+
+    .view-member-btn{
+        border:none;
+        border-radius:12px;
+        padding:9px 14px;
+        background:#eef2ff;
+        color:#6777ef;
+        font-weight:600;
+    }
+
+    .view-member-btn:hover{
+        background:#6777ef;
+        color:#fff;
+    }
+
+    .view-btn{
+        width:42px;
+        height:42px;
+        border:none;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:linear-gradient(135deg,#6777ef,#8ea6ff);
+        color:#fff;
+    }
+
+    .member-box{
+        background:#f8fafc;
+        border-radius:18px;
+        padding:18px;
+    }
+
+    .member-item{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        background:#fff;
+        padding:14px;
+        border-radius:14px;
+        margin-bottom:12px;
+        border:1px solid #eef2ff;
+        flex-wrap:wrap;
+        gap:12px;
+    }
+
+    .member-left{
+        display:flex;
+        align-items:center;
+    }
+
+    .member-avatar{
+        width:45px;
+        height:45px;
+        border-radius:14px;
+        background:linear-gradient(135deg,#6777ef,#8ea6ff);
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:700;
+        margin-right:14px;
+    }
+
+    .member-name{
+        font-weight:700;
+        color:#1e293b;
+    }
+
+    .member-role{
+        font-size:12px;
+        color:#64748b;
+    }
+
+    .member-status{
+        padding:6px 12px;
+        border-radius:20px;
+        font-size:12px;
+        font-weight:700;
+    }
+
+    .pending-status{
+        background:#fef3c7;
+        color:#d97706;
+    }
+
+    .accepted-status{
+        background:#dcfce7;
+        color:#16a34a;
+    }
+
+    .pagination{
+        gap:8px;
+    }
+
+    .pagination .page-link{
+        border:none;
+        width:42px;
+        height:42px;
+        border-radius:14px !important;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#6777ef;
+        font-weight:700;
+        box-shadow:0 5px 14px rgba(0,0,0,.06);
+    }
+
+    .pagination .active .page-link{
+        background:#6777ef;
+        color:#fff;
+    }
+
+    @media(max-width:768px){
+
+        .groups-header{
+            padding:18px;
+        }
+
+        .title-text{
+            font-size:20px;
+        }
+
+        .search-box{
+            margin-top:15px;
+            max-width:100%;
+        }
+
+        .custom-table{
+            min-width:900px;
+        }
+
+    }
+
+</style>
+
+<div class="main-content">
+
+    <section class="section">
+
+        <div class="section-body">
+
+            <div class="row">
+
+                <div class="col-12">
+
+                    <div class="groups-card">
+
+                        <!-- HEADER -->
+
+                        <div class="groups-header">
+
+                            <div class="row align-items-center">
+
+                                <div class="col-lg-6">
+
+                                    <div class="title-text">
+                                        🚨 Instant Emergency Groups
+                                    </div>
+
+                                    <div class="sub-text">
+                                        Manage all emergency rescue groups
+                                    </div>
+
+                                </div>
+
+                                <div class="col-lg-6">
+
+                                    <div class="search-box ml-lg-auto">
+
+                                        <i class="fas fa-search search-icon"></i>
+
+                                        <input
+                                            type="text"
+                                            id="searchInput"
+                                            placeholder="Search group, signal, user..."
+                                            autocomplete="off"
+                                        >
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
 
-                        <!-- Pagination -->
-                        <nav class="mt-3">
-                            <ul class="pagination justify-content-end">
-                                <li class="page-item disabled"><a class="page-link" href="#">Prev</a></li>
-                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+                        <!-- TABLE -->
 
-    <div class="settingSidebar">
-        <a href="javascript:void(0)" class="settingPanelToggle"> <i class="fa fa-spin fa-cog"></i>
-        </a>
-        <div class="settingSidebar-body ps-container ps-theme-default">
-            <div class=" fade show active">
-                <div class="setting-panel-header">Setting Panel
-                </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Select Layout</h6>
-                    <div class="selectgroup layout-color w-50">
-                        <label class="selectgroup-item">
-                            <input type="radio" name="value" value="1" class="selectgroup-input-radio select-layout"
-                                checked>
-                            <span class="selectgroup-button">Light</span>
-                        </label>
-                        <label class="selectgroup-item">
-                            <input type="radio" name="value" value="2" class="selectgroup-input-radio select-layout">
-                            <span class="selectgroup-button">Dark</span>
-                        </label>
+                        <div class="table-responsive">
+
+                            <table class="table custom-table" id="groupsTable">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>#</th>
+                                        <th>Group Name</th>
+                                        <th>Signal ID</th>
+                                        <th>Emergency User</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Members</th>
+                                        <!-- <th>Action</th> -->
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @forelse($groups as $group)
+
+                                        <tr>
+
+                                            <td>
+                                                {{ ($groups->currentPage() - 1) * $groups->perPage() + $loop->iteration }}
+                                            </td>
+
+                                            <td>
+
+                                                <span class="group-badge">
+
+                                                    {{ $group->group_name }}
+
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+
+                                                {{ $group->emergency_signal_id }}
+
+                                            </td>
+
+                                            <td>
+
+                                                {{ $group->emergency_user_name }}
+
+                                            </td>
+
+                                            <td>
+
+                                                @if($group->signal_status == 'Active')
+
+                                                    <span class="status-active">
+
+                                                        Active
+
+                                                    </span>
+
+                                                @else
+
+                                                    <span class="status-resolved">
+
+                                                        Resolved
+
+                                                    </span>
+
+                                                @endif
+
+                                            </td>
+
+                                            <td>
+
+                                                {{ \Carbon\Carbon::parse($group->created_at)->format('d M Y h:i A') }}
+
+                                            </td>
+
+                                            <td>
+
+                                                <button
+                                                    class="view-member-btn"
+                                                    data-toggle="collapse"
+                                                    data-target="#members{{ $group->id }}"
+                                                >
+
+                                                    View Members
+                                                    ({{ count($group->members) }})
+
+                                                </button>
+
+                                            </td>
+
+                                            <!-- <td>
+
+                                                <button class="view-btn">
+
+                                                    <i class="fas fa-eye"></i>
+
+                                                </button>
+
+                                            </td> -->
+
+                                        </tr>
+
+                                        <!-- MEMBERS -->
+
+                                        <tr
+                                            id="members{{ $group->id }}"
+                                            class="collapse"
+                                        >
+
+                                            <td colspan="8">
+
+                                                <div class="member-box">
+
+                                                    @forelse($group->members as $member)
+
+                                                        <div class="member-item">
+
+                                                            <div class="member-left">
+
+                                                                <div class="member-avatar">
+
+                                                                    {{ strtoupper(substr($member->name,0,1)) }}
+
+                                                                </div>
+
+                                                                <div>
+
+                                                                    <div class="member-name">
+
+                                                                        {{ $member->name }}
+
+                                                                    </div>
+
+                                                                    <div class="member-role">
+
+                                                                        {{ $member->user_role }}
+
+                                                                        •
+
+                                                                        {{ $member->phone_no ?? 'N/A' }}
+
+                                                                    </div>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                            <div>
+
+                                                                @if($member->status == 'accepted')
+
+                                                                    <span class="member-status accepted-status">
+
+                                                                        Accepted
+
+                                                                    </span>
+
+                                                                @else
+
+                                                                    <span class="member-status pending-status">
+
+                                                                        Pending
+
+                                                                    </span>
+
+                                                                @endif
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    @empty
+
+                                                        <div class="text-center text-muted">
+
+                                                            No Members Found
+
+                                                        </div>
+
+                                                    @endforelse
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    @empty
+
+                                        <tr>
+
+                                            <td colspan="8" class="text-center py-5">
+
+                                                <h5>No Emergency Groups Found</h5>
+
+                                            </td>
+
+                                        </tr>
+
+                                    @endforelse
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        <!-- PAGINATION -->
+
+                        <div class="p-4 bg-white">
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                                <div class="text-muted mb-2">
+
+                                    Showing
+                                    {{ $groups->firstItem() ?? 0 }}
+                                    to
+                                    {{ $groups->lastItem() ?? 0 }}
+                                    of
+                                    {{ $groups->total() }}
+                                    entries
+
+                                </div>
+
+                                <div>
+
+                                    {!! $groups->links('pagination::bootstrap-5') !!}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
+
                 </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Sidebar Color</h6>
-                    <div class="selectgroup selectgroup-pills sidebar-color">
-                        <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="1" class="selectgroup-input select-sidebar">
-                            <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                                data-original-title="Light Sidebar"><i class="fas fa-sun"></i></span>
-                        </label>
-                        <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="2" class="selectgroup-input select-sidebar"
-                                checked>
-                            <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                                data-original-title="Dark Sidebar"><i class="fas fa-moon"></i></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Color Theme</h6>
-                    <div class="theme-setting-options">
-                        <ul class="choose-theme list-unstyled mb-0">
-                            <li title="white" class="active">
-                                <div class="white"></div>
-                            </li>
-                            <li title="cyan">
-                                <div class="cyan"></div>
-                            </li>
-                            <li title="black">
-                                <div class="black"></div>
-                            </li>
-                            <li title="purple">
-                                <div class="purple"></div>
-                            </li>
-                            <li title="orange">
-                                <div class="orange"></div>
-                            </li>
-                            <li title="green">
-                                <div class="green"></div>
-                            </li>
-                            <li title="red">
-                                <div class="red"></div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <div class="theme-setting-options">
-                        <label class="m-b-0">
-                            <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                                id="mini_sidebar_setting">
-                            <span class="custom-switch-indicator"></span>
-                            <span class="control-label p-l-10">Mini Sidebar</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <div class="theme-setting-options">
-                        <label class="m-b-0">
-                            <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                                id="sticky_header_setting">
-                            <span class="custom-switch-indicator"></span>
-                            <span class="control-label p-l-10">Sticky Header</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="mt-4 mb-4 p-3 align-center rt-sidebar-last-ele">
-                    <a href="#" class="btn btn-icon icon-left btn-primary btn-restore-theme">
-                        <i class="fas fa-undo"></i> Restore Default
-                    </a>
-                </div>
+
             </div>
+
         </div>
-    </div>
+
+    </section>
+
 </div>
+
+
+<script>
+
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+
+        let value = this.value.toLowerCase();
+
+        let rows = document.querySelectorAll("#groupsTable tbody tr");
+
+        rows.forEach((row) => {
+
+            // collapse member row skip
+            if(row.classList.contains('collapse')){
+                return;
+            }
+
+            let text = row.innerText.toLowerCase();
+
+            if(text.includes(value)){
+
+                row.style.display = "";
+
+                // member row show
+                let nextRow = row.nextElementSibling;
+
+                if(nextRow && nextRow.classList.contains('collapse')){
+                    nextRow.style.display = "";
+                }
+
+            }else{
+
+                row.style.display = "none";
+
+                // member row hide
+                let nextRow = row.nextElementSibling;
+
+                if(nextRow && nextRow.classList.contains('collapse')){
+                    nextRow.style.display = "none";
+                }
+
+            }
+
+        });
+
+    });
+
+</script>
+
 @include('admin.includes.footer')

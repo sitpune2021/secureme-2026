@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class EmergencyResponsesController extends Controller
 {
+
+
     /**
      * Fetch all emergency responses with counts of accepted/rejected
      */
@@ -41,4 +43,6 @@ class EmergencyResponsesController extends Controller
         // dd($counts);
         return view('admin.emergency_responses_lists', compact('responses', 'counts'));
     }
+
+    
 }
