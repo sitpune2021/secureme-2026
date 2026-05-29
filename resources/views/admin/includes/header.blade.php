@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 @include('admin.includes.sidebar');
+
 <head>
 
     <meta charset="UTF-8">
@@ -347,100 +348,148 @@ body{
 
 <body>
 
-<div class="loader"></div>
+    <div class="loader"></div>
 
-<div id="app">
+    <div id="app">
 
-<div class="main-wrapper main-wrapper-1">
+    <div class="main-wrapper main-wrapper-1">
 
-<div class="navbar-bg"></div>
+    <div class="navbar-bg"></div>
 
-<!-- HEADER -->
-<nav class="navbar navbar-expand-lg main-navbar sticky">
+    <!-- HEADER -->
+    <nav class="navbar navbar-expand-lg main-navbar sticky">
 
-    <!-- LEFT -->
-    <!-- LEFT -->
-    <div class="header-left">
+        <!-- LEFT -->
+        <div class="header-left">
 
-        <!-- TOGGLE -->
-        <a href="#"
-        data-toggle="sidebar"
-        class="nav-link header-btn">
-
-            <i data-feather="menu"></i>
-
-        </a>
-
-    </div>
-
-    <!-- RIGHT -->
-    <ul class="navbar-nav navbar-right">
-
-        <!-- PROFILE -->
-        <li class="dropdown">
-
+            <!-- TOGGLE -->
             <a href="#"
-               data-toggle="dropdown"
-               class="nav-link dropdown-toggle profile-btn">
+            data-toggle="sidebar"
+            class="nav-link header-btn">
 
-                <img src="{{ asset('admin-assets/img/users/user-3.png') }}"
-                     class="user-img-radious-style">
-
-                <div class="profile-content">
-
-                    <h6>
-                        Admin
-                    </h6>
-
-                    <span>
-                        Super Admin
-                    </span>
-
-                </div>
+                <i data-feather="menu"></i>
 
             </a>
 
-            <!-- DROPDOWN -->
-            <div class="dropdown-menu dropdown-menu-right pullDown">
+        </div>
 
-                <div class="dropdown-title">
-                    {{ session('admin_email', 'Guest') }}
+        <!-- RIGHT -->
+        <ul class="navbar-nav navbar-right">
+
+            <!-- PROFILE -->
+            <li class="dropdown">
+
+                <a href="#"
+                    data-toggle="dropdown"
+                    class="nav-link dropdown-toggle profile-btn">
+
+                    @php
+
+                        $admin = DB::table('users')
+
+                            ->where('id', session('admin_id'))
+
+                            ->first();
+
+                    @endphp
+
+                    <!-- PROFILE IMAGE -->
+
+                    @if(!empty($admin->profile_image))
+
+                        <img
+                            src="{{ asset('admin_profile/' . $admin->profile_image) }}"
+                            class="user-img-radious-style"
+                            style="
+                                width:45px;
+                                height:45px;
+                                border-radius:50%;
+                                object-fit:cover;
+                            "
+                        >
+
+                    @else
+
+                        <img
+                            src="https://ui-avatars.com/api/?name={{ urlencode($admin->name ?? 'Admin') }}&background=6777ef&color=fff"
+                            class="user-img-radious-style"
+                            style="
+                                width:45px;
+                                height:45px;
+                                border-radius:50%;
+                                object-fit:cover;
+                            "
+                        >
+
+                    @endif
+
+                    <!-- PROFILE CONTENT -->
+
+                    <div class="profile-content">
+
+                        <h6>
+
+                            {{ $admin->name ?? 'Admin' }}
+
+                        </h6>
+
+                        <span>
+
+                            {{ $admin->user_role ?? 'Super Admin' }}
+
+                        </span>
+
+                    </div>
+
+                </a>
+
+                <!-- DROPDOWN -->
+
+                <div class="dropdown-menu dropdown-menu-right pullDown">
+
+                    <div class="dropdown-title">
+
+                        {{ $admin->email ?? 'Guest' }}
+
+                    </div>
+
+                    <!-- <a href="{{ url('admin/profile') }}"
+                        class="dropdown-item has-icon">
+
+                        <i class="far fa-user"></i>
+
+                        Profile
+
+                    </a> -->
+
+                    <a href="{{ url('admin/settings') }}"
+                        class="dropdown-item has-icon">
+
+                        <i class="fas fa-cog"></i>
+
+                        Settings
+
+                    </a>
+
+                    <div class="dropdown-divider"></div>
+
+                    <a href="{{ url('admin/logout') }}"
+                        class="dropdown-item has-icon text-danger">
+
+                        <i class="fas fa-sign-out-alt"></i>
+
+                        Logout
+
+                    </a>
+
                 </div>
 
-                <a href="{{ url('admin/profile') }}"
-                   class="dropdown-item has-icon">
+            </li>
 
-                    <i class="far fa-user"></i>
-                    Profile
+        </ul>
 
-                </a>
+    </nav>
 
-                <a href="{{ url('admin/settings') }}"
-                   class="dropdown-item has-icon">
-
-                    <i class="fas fa-cog"></i>
-                    Settings
-
-                </a>
-
-                <div class="dropdown-divider"></div>
-
-                <a href="{{ url('admin/logout') }}"
-                   class="dropdown-item has-icon text-danger">
-
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-
-                </a>
-
-            </div>
-
-        </li>
-
-    </ul>
-
-</nav>
-
-<script>
-    feather.replace();
-</script>
+    <script>
+        feather.replace();
+    </script>
