@@ -9,48 +9,90 @@ class DashboardController extends Controller
 {
 
 
-   // show Admin dashboard page
+    // SHOW ADMIN DASHBOARD
     public function AdminDashboard()
     {
         try {
 
+            // EMERGENCY STATS
+
             $stats = DB::table('emergency_signals')
                 ->selectRaw('
                     COUNT(*) as total_signals,
-                    SUM(CASE WHEN signal_status = "Active" THEN 1 ELSE 0 END) as active_emergency_signals,
-                    SUM(CASE WHEN signal_status = "Resolved" THEN 1 ELSE 0 END) as resolved_emergency_signals
+
+                    SUM(
+                        CASE
+                            WHEN signal_status = "Active"
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) as active_emergency_signals,
+
+                    SUM(
+                        CASE
+                            WHEN signal_status = "Resolved"
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) as resolved_emergency_signals
                 ')
                 ->first();
 
-            $users = DB::table('users')->count();
+            // TOTAL USERS
+            // ONLY NORMAL USERS
+
+            $users = DB::table('users')
+
+                ->where('user_role', 'user')
+
+                ->count();
+
+            // TOTAL HELPERS
+            // EXCEPT admin & user
+
+            $total_helpers = DB::table('users')
+
+                ->whereNotIn('user_role', [
+                    'admin',
+                    'user'
+                ])
+
+                ->count();
+
+            // TOTAL POLICE
 
             $TotalPolices = DB::table('users')
-                ->where('user_role', 'police')
+
+                ->where('user_role', 'Police')
+
                 ->count();
 
-            $total_helpers = DB::table('emergency_responses')
-                ->where('status', 'completed')
-                ->count();
+            // HELPERS LIST
 
-            // Helper Users List
             $helpers = DB::table('users')
-                ->whereIn('user_role', [
-                    'police',
-                    'Manager',
-                    'Gym_Person',
-                    'Defense'
+
+                ->whereNotIn('user_role', [
+                    'admin',
+                    'user'
                 ])
+
                 ->latest()
+
                 ->get();
 
             return view('admin.admin_dashboard', [
 
                 'users' => $users,
-                'active_emergency_signals' => $stats->active_emergency_signals,
-                'resolved_emergency_signals' => $stats->resolved_emergency_signals,
+
                 'total_helpers' => $total_helpers,
+
                 'TotalPolices' => $TotalPolices,
+
                 'helpers' => $helpers,
+
+                'active_emergency_signals' => $stats->active_emergency_signals,
+
+                'resolved_emergency_signals' => $stats->resolved_emergency_signals,
 
             ]);
 
@@ -60,6 +102,6 @@ class DashboardController extends Controller
 
         }
     }
-
+    
 
 }

@@ -38,6 +38,7 @@ Route::post('/reset-password',
 Route::middleware(['auth'])->group(function () 
 {
 
+
     Route::get('/admin/admin-dashboard', [DashboardController::class, 'AdminDashboard'])->name('admin.dashboard');
 
     // Users Module
@@ -75,7 +76,28 @@ Route::middleware(['auth'])->group(function ()
     // Routes for Reports Module
     Route::get('/admin/reports-and-logs', [ReportController::class, 'ReportsAndLogsList'])->name('admin.reports-and-logs');
 
+    Route::get(
+        '/reports/emergency-alerts',
+        [ReportController::class, 'EmergencyAlertsReport']
+    )->name('reports.emergency-alerts');
+
+    Route::get(
+        '/reports/emergency-responses',
+        [ReportController::class, 'EmergencyResponsesReport']
+    )->name('reports.emergency-responses');
+
     // Routes for settings module
     Route::get('/admin/settings', [SettingsController::class, 'settings'])->name('admin.settings');
 
+    Route::post(
+        '/admin/profile-update',
+        [SettingsController::class, 'profileUpdate']
+    )->name('admin.profile.update');
+
+    Route::post(
+        '/admin/change-password',
+        [SettingsController::class, 'changePassword']
+    )->name('admin.change.password');
+
+    
 });

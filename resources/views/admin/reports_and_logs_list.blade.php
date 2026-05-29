@@ -363,7 +363,7 @@
 
                                             <a
                                                 href="{{ url('reports/emergency-alerts') }}"
-                                                class="report-btn btn-danger-custom"
+                                                class="report-btn btn-danger-custom" target="_blank"
                                             >
 
                                                 View Report
@@ -405,7 +405,7 @@
 
                                             <a
                                                 href="{{ url('reports/emergency-responses') }}"
-                                                class="report-btn btn-warning-custom"
+                                                class="report-btn btn-warning-custom" target="_blank"
                                             >
 
                                                 View Report

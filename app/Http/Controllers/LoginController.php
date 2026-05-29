@@ -42,6 +42,15 @@ class LoginController extends Controller
 
             $request->session()->regenerate();
 
+            // STORE SESSION
+            session([
+
+                'admin_id' => Auth::user()->id,
+
+                'admin_email' => Auth::user()->email
+
+            ]);
+
             return redirect()->route('admin.dashboard')
 
                 ->with('success', 'Welcome back Admin!');
