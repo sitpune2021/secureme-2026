@@ -270,7 +270,7 @@ justify-content:center;
 }
 </style>
 
-<footer class="main-footer premium-footer">
+<footer class="main-footer premium-footer" style="top: 20px;">
 
 <!-- LEFT -->
 <div class="footer-left">

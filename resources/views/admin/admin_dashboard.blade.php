@@ -6,8 +6,10 @@
    PREMIUM DASHBOARD
 ========================= */
 
+
 .section{
-    padding:10px 5px 40px;
+    padding:10px 5px 0 !important;
+    margin-bottom:0 !important;
 }
 
 /* DASHBOARD HEADER */
@@ -557,17 +559,16 @@
 
             </div>
 
+            
             <!-- =========================
-                STATS CARDS
+                STATS CARDS - 4 IN ONE ROW
             ========================= -->
 
             <div class="row">
 
                 <!-- USERS -->
                 <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
                     <div class="card premium-card">
-
                         <div class="stats-card">
 
                             <div class="stats-icon icon-blue">
@@ -583,24 +584,19 @@
                             </div>
 
                             <div class="stats-bottom">
-
                                 <span class="stats-badge">
                                     Active Members
                                 </span>
-
                             </div>
 
                         </div>
-
                     </div>
-
                 </div>
+
 
                 <!-- HELPERS -->
                 <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
                     <div class="card premium-card">
-
                         <div class="stats-card">
 
                             <div class="stats-icon icon-green">
@@ -616,24 +612,19 @@
                             </div>
 
                             <div class="stats-bottom">
-
                                 <span class="stats-badge">
                                     Support Team
                                 </span>
-
                             </div>
 
                         </div>
-
                     </div>
-
                 </div>
+
 
                 <!-- POLICE -->
                 <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
                     <div class="card premium-card">
-
                         <div class="stats-card">
 
                             <div class="stats-icon icon-orange">
@@ -649,24 +640,19 @@
                             </div>
 
                             <div class="stats-bottom">
-
                                 <span class="stats-badge">
                                     Security Staff
                                 </span>
-
                             </div>
 
                         </div>
-
                     </div>
-
                 </div>
 
-                <!-- ACTIVE -->
+
+                <!-- ACTIVE EMERGENCY -->
                 <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
                     <div class="card premium-card">
-
                         <div class="stats-card">
 
                             <div class="stats-icon icon-red">
@@ -682,50 +668,13 @@
                             </div>
 
                             <div class="stats-bottom">
-
                                 <span class="stats-badge">
                                     Live Alerts
                                 </span>
-
                             </div>
 
                         </div>
-
                     </div>
-
-                </div>
-
-                <!-- RESOLVED -->
-                <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-
-                    <div class="card premium-card">
-
-                        <div class="stats-card">
-
-                            <div class="stats-icon icon-purple">
-                                ✅
-                            </div>
-
-                            <div class="stats-title">
-                                Resolved Signals
-                            </div>
-
-                            <div class="stats-number text-success">
-                                {{ $resolved_emergency_signals ?? '0' }}
-                            </div>
-
-                            <div class="stats-bottom">
-
-                                <span class="stats-badge">
-                                    Completed Cases
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
                 </div>
 
             </div>
@@ -895,9 +844,9 @@
                 </div>
             </div>
           
-        </section>
-        </div>
-
+        </section>   
+    </div>
+ 
 
     <script>
 
