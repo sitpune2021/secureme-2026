@@ -179,7 +179,7 @@
 /* REMOVE GAP */
 
 body.sidebar-gone .main-sidebar{
-    left:-280px;
+    left:-28z0px;
 }
 
 @media(max-width:991px){
