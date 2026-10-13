@@ -15,6 +15,7 @@ class UserController extends Controller
 
             ->whereIn('user_role', [
                 'police',
+                'User',
                 'Manager',
                 'Gym_Person',
                 'Defense'

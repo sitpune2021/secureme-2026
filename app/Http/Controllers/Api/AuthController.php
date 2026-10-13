@@ -615,22 +615,90 @@ class AuthController extends Controller
             }
         }
 
+        // public function userAddContacts(Request $request)
+        // {
+        //     try {
+        //         $validator = Validator::make($request->all(), [
+        //             'user_role' => 'required|string|in:Police,Manager,Gym_Person',
+        //             'name'      => 'required|string|max:255',
+        //             'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+        //             'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
+        //             'latitude' => 'required|numeric',
+        //             'longitude' => 'required|numeric',
+        //         ]);
+
+        //         if ($validator->fails()) {
+        //             return response()->json([
+        //                 'status' => false,
+        //                 'message' => $validator->errors()->first()
+        //             ], 422);
+        //         }
+
+        //         $validated = $validator->validated();
+
+        //         $contact = User::create([
+        //             'user_role' => $validated['user_role'],
+        //             'name'      => $validated['name'],
+        //             'email'     => strtolower($validated['email']),
+        //             'password'  => Hash::make('defaultpassword'),
+        //             'phone_no'  => $validated['phone_no'],
+        //             'latitude' => $validated['latitude'],
+        //             'longitude' => $validated['longitude'],
+        //         ]);
+
+        //         return response()->json([
+        //             'status' => true,
+        //             'message' => 'Contact added successfully',
+        //             'data' => [
+        //                 'id'        => $contact->id,
+        //                 'user_role' => $contact->user_role,
+        //                 'name'      => $contact->name,
+        //                 'email'     => $contact->email,
+        //                 'phone_no'  => $contact->phone_no,
+        //                 'latitude'  => $contact->latitude,
+        //                 'longitude'  => $contact->longitude,
+        //             ]
+        //         ], 201);
+        //     } catch (\Throwable $th) {
+        //         Log::error('Error adding contact: ' . $th->getMessage());
+
+        //         return response()->json([
+        //             'status' => false,
+        //             'message' => 'An error occurred while adding contact. Please try again later.'
+        //         ], 500);
+        //     }
+        // }
+
+
         public function userAddContacts(Request $request)
         {
             try {
                 $validator = Validator::make($request->all(), [
                     'user_role' => 'required|string|in:Police,Manager,Gym_Person',
                     'name'      => 'required|string|max:255',
-                    'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
-                    'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
-                    'latitude' => 'required|numeric',
+                    'email'     => [
+                        'required',
+                        'string',
+                        'email:rfc,dns',
+                        'max:255',
+                        'unique:users,email'
+                    ],
+                    'password'  => 'required|string|min:8',
+                    'phone_no'  => [
+                        'required',
+                        'string',
+                        'min:10',
+                        'unique:users,phone_no'
+                    ],
+                    'latitude'  => 'required|numeric',
                     'longitude' => 'required|numeric',
                 ]);
 
                 if ($validator->fails()) {
                     return response()->json([
-                        'status' => false,
-                        'message' => $validator->errors()->first()
+                        'status'  => false,
+                        'message' => $validator->errors()->first(),
+                        'errors'  => $validator->errors()
                     ], 422);
                 }
 
@@ -640,35 +708,36 @@ class AuthController extends Controller
                     'user_role' => $validated['user_role'],
                     'name'      => $validated['name'],
                     'email'     => strtolower($validated['email']),
-                    'password'  => Hash::make('defaultpassword'),
+                    'password'  => Hash::make($validated['password']),
                     'phone_no'  => $validated['phone_no'],
-                    'latitude' => $validated['latitude'],
+                    'latitude'  => $validated['latitude'],
                     'longitude' => $validated['longitude'],
                 ]);
 
                 return response()->json([
-                    'status' => true,
+                    'status'  => true,
                     'message' => 'Contact added successfully',
-                    'data' => [
+                    'data'    => [
                         'id'        => $contact->id,
                         'user_role' => $contact->user_role,
                         'name'      => $contact->name,
                         'email'     => $contact->email,
                         'phone_no'  => $contact->phone_no,
                         'latitude'  => $contact->latitude,
-                        'longitude'  => $contact->longitude,
+                        'longitude' => $contact->longitude,
                     ]
                 ], 201);
+
             } catch (\Throwable $th) {
                 Log::error('Error adding contact: ' . $th->getMessage());
 
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'An error occurred while adding contact. Please try again later.'
                 ], 500);
             }
         }
-
+        
         public function updateContact(Request $request, $id)
         {
             try {
