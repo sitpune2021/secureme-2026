@@ -20,6 +20,15 @@ Route::prefix('auth')->group(function () {
 
     Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
 
+    // contact
+        Route::get('contacts', [AuthController::class, 'userContacts']);
+
+        Route::post('add/contacts', [AuthController::class, 'userAddContacts']);
+
+        Route::put('contacts/{id}', [AuthController::class, 'updateContact']);
+
+            Route::delete('delete/contacts/{id}', [AuthController::class, 'deleteContact']);
+
         // Protected Routes
         Route::middleware('auth:sanctum')->group(function () {
 
@@ -30,15 +39,6 @@ Route::prefix('auth')->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
 
             Route::get('user-role', [AuthController::class, 'getUserRole']);
-
-            // contact
-            Route::get('contacts', [AuthController::class, 'userContacts']);
-
-            Route::post('add/contacts', [AuthController::class, 'userAddContacts']);
-
-            Route::put('contacts/{id}', [AuthController::class, 'updateContact']);
-
-            Route::delete('delete/contacts/{id}', [AuthController::class, 'deleteContact']);
 
             // Emergency Routes
             Route::post('signal/trigger', [AuthController::class, 'triggerSignal']);
