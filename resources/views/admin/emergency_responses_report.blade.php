@@ -236,103 +236,141 @@
                     <table class="table custom-table">
 
                         <thead>
-
                             <tr>
-
                                 <th>#</th>
                                 <th>Signal ID</th>
                                 <th>Responder</th>
                                 <th>Role</th>
-                                <th>Phone</th>
-                                <th>Status</th>
+                                <th>Responder Phone</th>
+                                <th>SOS User Details</th>
+                                <th>Progress</th>
+                                <th>Response Status</th>
+                                <th>SOS Status</th>
                                 <th>Date & Time</th>
-
                             </tr>
-
                         </thead>
 
                         <tbody id="responseTable">
 
                             @forelse($responses as $response)
+                                @php
+                                    $action = strtolower($response->response_action ?? '');
+
+                                    $actionLabels = [
+                                        'accept' => 'Accepted',
+                                        'accepted' => 'Accepted',
+                                        'decline' => 'Declined',
+                                        'declined' => 'Declined',
+                                        'on_the_way' => 'On The Way',
+                                        'arrived' => 'Arrived',
+                                        'help_completed' => 'Help Completed',
+                                        'unable_to_help' => 'Unable To Help',
+                                    ];
+
+                                    $actionClasses = [
+                                        'accept' => 'accepted-badge',
+                                        'accepted' => 'accepted-badge',
+                                        'decline' => 'pending-badge',
+                                        'declined' => 'pending-badge',
+                                        'on_the_way' => 'accepted-badge',
+                                        'arrived' => 'accepted-badge',
+                                        'help_completed' => 'accepted-badge',
+                                        'unable_to_help' => 'pending-badge',
+                                    ];
+                                @endphp
 
                                 <tr>
-
+                                    {{-- Serial Number --}}
                                     <td>
-
                                         {{ ($responses->currentPage() - 1) * $responses->perPage() + $loop->iteration }}
-
                                     </td>
 
+                                    {{-- Signal ID --}}
                                     <td>
-
                                         <span class="signal-id">
-
                                             {{ $response->emergency_signal_code }}
-
                                         </span>
-
                                     </td>
 
+                                    {{-- Responder --}}
                                     <td>
-
                                         {{ $response->name }}
-
                                     </td>
 
+                                    {{-- Responder Role --}}
                                     <td>
-
-                                        {{ $response->user_role }}
-
+                                        {{ $response->user_role ?? 'N/A' }}
                                     </td>
 
+                                    {{-- Responder Phone --}}
                                     <td>
-
                                         {{ $response->phone_no ?? 'N/A' }}
-
                                     </td>
 
+                                    {{-- SOS User Details --}}
                                     <td>
+                                        <strong>
+                                            {{ $response->sos_user_name }}
+                                        </strong>
+                                        <br>
 
-                                        @if($response->response_action == 'accepted')
+                                        <small>
+                                            <strong>Phone:</strong>
+                                            {{ $response->sos_user_phone ?? 'N/A' }}
+                                        </small>
+                                        <br>
 
-                                            <span class="accepted-badge">
+                                        <small>
+                                            <strong>Role:</strong>
+                                            {{ $response->sos_user_role ?? 'N/A' }}
+                                        </small>
+                                    </td>
 
-                                                Accepted
+                                    {{-- Actual Progress --}}
+                                    <td>
+                                        <span class="{{ $actionClasses[$action] ?? 'pending-badge' }}">
+                                            {{ $actionLabels[$action] ?? ($action !== '' ? ucwords(str_replace('_', ' ', $action)) : 'No Response') }}
+                                        </span>
+                                    </td>
 
-                                            </span>
-
+                                    {{-- Response Status --}}
+                                    <td>
+                                        @if($response->status === 'completed')
+                                            <span class="accepted-badge">Completed</span>
+                                        @elseif($response->status === 'in_progress')
+                                            <span class="accepted-badge">In Progress</span>
+                                        @elseif($response->status === 'pending')
+                                            <span class="pending-badge">Pending</span>
                                         @else
-
                                             <span class="pending-badge">
-
-                                                Pending
-
+                                                {{ ucfirst(str_replace('_', ' ', $response->status ?? 'N/A')) }}
                                             </span>
-
                                         @endif
-
                                     </td>
 
+                                    {{-- SOS Status --}}
                                     <td>
-
-                                        {{ \Carbon\Carbon::parse($response->created_at)->format('d M Y h:i A') }}
-
+                                        @if($response->sos_status === 'Active')
+                                            <span class="badge-active">Active</span>
+                                        @else
+                                            <span class="badge-resolved">
+                                                {{ $response->sos_status ?? 'N/A' }}
+                                            </span>
+                                        @endif
                                     </td>
 
+                                    {{-- Date & Time --}}
+                                    <td>
+                                        {{ \Carbon\Carbon::parse($response->created_at)->format('d M Y h:i A') }}
+                                    </td>
                                 </tr>
 
                             @empty
-
                                 <tr>
-
-                                    <td colspan="7" class="text-center py-5">
-
+                                    <td colspan="10" class="text-center py-5">
                                         No Emergency Responses Found
-
                                     </td>
-
                                 </tr>
-
                             @endforelse
 
                         </tbody>

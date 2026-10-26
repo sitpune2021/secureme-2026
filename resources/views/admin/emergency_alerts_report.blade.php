@@ -127,6 +127,143 @@
 
 </style>
 
+<!-- Responder / Police Status style -->
+<style>
+    .report-responder-cell {
+    min-width: 270px;
+    max-width: 360px;
+    white-space: normal !important;
+    vertical-align: top !important;
+}
+
+.report-responder-card {
+    width: 100%;
+    min-width: 240px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #ffffff;
+    border: 1px solid #e5eaf1;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+}
+
+.report-responder-card:last-child {
+    margin-bottom: 0;
+}
+
+.report-responder-name {
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.report-responder-name i {
+    color: #2563eb;
+    margin-right: 5px;
+}
+
+.report-responder-info {
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.7;
+    margin-top: 4px;
+}
+
+.report-responder-progress {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 12px;
+}
+
+.report-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.report-status-accepted {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.report-status-progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.report-status-arrived {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.report-status-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.report-status-declined {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.report-status-pending {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.report-responder-notes {
+    margin-top: 8px;
+    padding: 8px;
+    background: #f8fafc;
+    border-left: 3px solid #cbd5e1;
+    border-radius: 4px;
+    color: #475569;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.report-responder-updated {
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid #edf0f4;
+    color: #64748b;
+    font-size: 10px;
+}
+
+.report-responder-updated i {
+    margin-right: 4px;
+}
+
+.report-no-responder {
+    min-width: 180px;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+@media (max-width: 768px) {
+    .report-responder-cell {
+        min-width: 250px;
+        max-width: 300px;
+    }
+
+    .report-responder-card {
+        min-width: 220px;
+    }
+}
+</style>
+
 <div class="main-content">
 
     <section class="section">
@@ -229,20 +366,17 @@
                     <table class="table custom-table">
 
                         <thead>
-
                             <tr>
-
                                 <th>#</th>
                                 <th>Signal ID</th>
                                 <th>User Name</th>
                                 <th>Phone</th>
-                                <th>Status</th>
+                                <th>SOS Status</th>
+                                <th>Responder / Police Status</th>
                                 <th>Latitude</th>
                                 <th>Longitude</th>
                                 <th>Date & Time</th>
-
                             </tr>
-
                         </thead>
 
                         <tbody id="responseTable">
@@ -250,81 +384,160 @@
                             @forelse($alerts as $alert)
 
                                 <tr>
-
+                                    {{-- Serial Number --}}
                                     <td>
                                         {{ ($alerts->currentPage() - 1) * $alerts->perPage() + $loop->iteration }}
                                     </td>
 
+                                    {{-- Signal ID --}}
                                     <td>
-
                                         <span class="signal-id">
-
                                             {{ $alert->signal_id }}
-
                                         </span>
-
                                     </td>
 
+                                    {{-- SOS User --}}
                                     <td>
-
                                         {{ $alert->name }}
-
                                     </td>
 
+                                    {{-- SOS User Phone --}}
                                     <td>
-
                                         {{ $alert->phone_no ?? 'N/A' }}
-
                                     </td>
 
+                                    {{-- SOS Status --}}
                                     <td>
-
                                         @if($alert->signal_status == 'Active')
-
-                                            <span class="badge-active">
-
-                                                Active
-
-                                            </span>
-
+                                            <span class="badge-active">Active</span>
                                         @else
-
-                                            <span class="badge-resolved">
-
-                                                Resolved
-
-                                            </span>
-
+                                            <span class="badge-resolved">Resolved</span>
                                         @endif
+                                    </td>
+
+                                    {{-- Responder / Police Details --}}
+                                    <td class="report-responder-cell">
+
+                                        @forelse($alert->responders as $responder)
+
+                                            @php
+                                                $action = strtolower($responder->response_action ?? '');
+
+                                                $actionLabels = [
+                                                    'accept' => 'Accepted SOS',
+                                                    'accepted' => 'Accepted SOS',
+                                                    'decline' => 'Declined SOS',
+                                                    'declined' => 'Declined SOS',
+                                                    'on_the_way' => 'On The Way',
+                                                    'arrived' => 'Arrived at Location',
+                                                    'help_completed' => 'Help Completed',
+                                                    'unable_to_help' => 'Unable To Help',
+                                                ];
+
+                                                $actionClasses = [
+                                                    'accept' => 'report-status-accepted',
+                                                    'accepted' => 'report-status-accepted',
+                                                    'decline' => 'report-status-declined',
+                                                    'declined' => 'report-status-declined',
+                                                    'on_the_way' => 'report-status-progress',
+                                                    'arrived' => 'report-status-arrived',
+                                                    'help_completed' => 'report-status-completed',
+                                                    'unable_to_help' => 'report-status-declined',
+                                                ];
+
+                                                $responseStatus = strtolower($responder->response_status ?? 'pending');
+                                            @endphp
+
+                                            <div class="report-responder-card">
+
+                                                <div class="report-responder-name">
+                                                    <i class="fas fa-user-shield"></i>
+                                                    {{ $responder->responder_name ?? 'Unknown Responder' }}
+                                                </div>
+
+                                                <div class="report-responder-info">
+                                                    <strong>Role:</strong>
+                                                    {{ $responder->responder_role ?? $responder->responder_type ?? 'Responder' }}
+                                                </div>
+
+                                                <div class="report-responder-info">
+                                                    <strong>Phone:</strong>
+                                                    {{ $responder->responder_phone ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="report-responder-progress">
+                                                    <strong>Progress:</strong>
+
+                                                    <span class="report-status-badge {{ $actionClasses[$action] ?? 'report-status-pending' }}">
+                                                        {{ $actionLabels[$action] ?? ($action !== '' ? ucwords(str_replace('_', ' ', $action)) : 'No Response Yet') }}
+                                                    </span>
+                                                </div>
+
+                                                <div class="report-responder-info">
+                                                    <strong>Response Status:</strong>
+
+                                                    @if($responseStatus == 'in_progress')
+                                                        <span class="report-status-badge report-status-progress">
+                                                            In Progress
+                                                        </span>
+                                                    @elseif($responseStatus == 'completed')
+                                                        <span class="report-status-badge report-status-completed">
+                                                            Completed
+                                                        </span>
+                                                    @elseif($responseStatus == 'pending')
+                                                        <span class="report-status-badge report-status-pending">
+                                                            Pending
+                                                        </span>
+                                                    @else
+                                                        <span class="report-status-badge report-status-pending">
+                                                            {{ ucwords(str_replace('_', ' ', $responseStatus)) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+
+                                                @if(!empty($responder->response_notes))
+                                                    <div class="report-responder-notes">
+                                                        <strong>Note:</strong>
+                                                        {{ $responder->response_notes }}
+                                                    </div>
+                                                @endif
+
+                                                @if($responder->response_updated_at)
+                                                    <div class="report-responder-updated">
+                                                        <i class="far fa-clock"></i>
+                                                        {{ \Carbon\Carbon::parse($responder->response_updated_at)->format('d M Y, h:i A') }}
+                                                    </div>
+                                                @endif
+
+                                            </div>
+
+                                        @empty
+
+                                            <div class="report-no-responder">
+                                                <i class="fas fa-user-clock"></i>
+                                                No Responder Yet
+                                            </div>
+
+                                        @endforelse
 
                                     </td>
 
-                                    <td>
-                                        {{ $alert->latitude }}
-                                    </td>
+                                    {{-- Location --}}
+                                    <td>{{ $alert->latitude }}</td>
+                                    <td>{{ $alert->longitude }}</td>
 
+                                    {{-- Date & Time --}}
                                     <td>
-                                        {{ $alert->longitude }}
-                                    </td>
-
-                                    <td>
-
                                         {{ \Carbon\Carbon::parse($alert->created_at)->format('d M Y h:i A') }}
-
                                     </td>
-
                                 </tr>
 
                             @empty
 
                                 <tr>
-
-                                    <td colspan="8" class="text-center py-5">
-
+                                    <td colspan="9" class="text-center py-5">
                                         No Emergency Alerts Found
-
                                     </td>
-
                                 </tr>
 
                             @endforelse

@@ -912,6 +912,7 @@ class AuthController extends Controller
             }
         }
    
+        // user nearby SOS alerts
         public function nearbySignals(Request $request)
         {
             $user = $request->user();
@@ -1389,12 +1390,14 @@ class AuthController extends Controller
             }
         }
         
+        // Only the person who created this SOS can view its tracking details.
         public function getSignalStatus(Request $request, string $signalId)
         {
             $user = $request->user();
 
             $signal = EmergencySignal::where('signal_id', $signalId)
-                ->with(['responses.user:id,name,user_role'])
+                //->with(['responses.user:id,name,user_role'])
+                ->with(['responses.user:id,name,user_role,latitude,longitude'])
                 ->first();
 
             if (!$signal) {
@@ -1428,6 +1431,8 @@ class AuthController extends Controller
                             'response_action' => $response->response_action,
                             'response_notes' => $response->response_notes,
                             'response_status' => $response->status,
+                            'latitude' => $response->user?->latitude,
+                            'longitude' => $response->user?->longitude,
                             'updated_at' => $response->updated_at,
                         ];
                     })->values(),

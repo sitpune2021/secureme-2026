@@ -295,7 +295,7 @@
 
                                 <!-- USER REPORT -->
 
-                                <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                <!-- <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
 
                                     <div class="report-card h-100">
 
@@ -333,7 +333,7 @@
 
                                     </div>
 
-                                </div>
+                                </div> -->
 
                                 <!-- EMERGENCY ALERT -->
 
@@ -421,7 +421,7 @@
 
                                 <!-- EMERGENCY GROUP -->
 
-                                <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                <!-- <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
 
                                     <div class="report-card h-100">
 
@@ -459,11 +459,11 @@
 
                                     </div>
 
-                                </div>
+                                </div> -->
 
                                 <!-- SYSTEM LOG -->
 
-                                <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                                <!-- <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
 
                                     <div class="report-card h-100">
 
@@ -501,7 +501,7 @@
 
                                     </div>
 
-                                </div>
+                                </div> -->
 
                             </div>
 

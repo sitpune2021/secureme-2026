@@ -157,38 +157,37 @@ class ReportController extends Controller
         );
     }
 
+    // ==========================================
     // EMERGENCY ALERT REPORT
+    // ==========================================
+
     public function EmergencyAlertsReport(Request $request)
     {
         $search = $request->search;
 
+        // ==========================================
+        // FETCH EMERGENCY ALERTS
+        // ==========================================
         $alerts = DB::table('emergency_signals')
-
             ->join(
                 'users',
                 'emergency_signals.user_id',
                 '=',
                 'users.id'
             )
-
             ->select(
                 'emergency_signals.*',
                 'users.name',
                 'users.phone_no'
             )
-
             ->when($search, function ($query) use ($search) {
-
                 $query->where(function ($q) use ($search) {
-
                     $q->where('users.name', 'LIKE', "%{$search}%")
-
                         ->orWhere(
                             'emergency_signals.signal_id',
                             'LIKE',
                             "%{$search}%"
                         )
-
                         ->orWhere(
                             'emergency_signals.signal_status',
                             'LIKE',
@@ -196,15 +195,49 @@ class ReportController extends Controller
                         );
                 });
             })
-
             ->orderBy('emergency_signals.id', 'desc')
-
             ->paginate(10)
-
             ->withQueryString();
 
-        // TOTAL COUNTS
+        // ==========================================
+        // FETCH RESPONDERS FOR CURRENT PAGE ALERTS
+        // emergency_responses.signal_id stores
+        // emergency_signals.id (numeric ID)
+        // ==========================================
+        $signalRecordIds = $alerts->getCollection()
+            ->pluck('id')
+            ->toArray();
 
+        $responses = DB::table('emergency_responses as er')
+            ->leftJoin('users as responder', 'responder.id', '=', 'er.user_id')
+            ->whereIn('er.signal_id', $signalRecordIds)
+            ->select(
+                'er.id as response_id',
+                'er.signal_id',
+                'er.user_id as responder_id',
+                'er.responder_type',
+                'er.response_action',
+                'er.response_notes',
+                'er.status as response_status',
+                'er.updated_at as response_updated_at',
+                'responder.name as responder_name',
+                'responder.phone_no as responder_phone',
+                'responder.user_role as responder_role'
+            )
+            ->orderBy('er.updated_at', 'desc')
+            ->get()
+            ->groupBy('signal_id');
+
+        // Attach responders to each alert
+        $alerts->getCollection()->transform(function ($alert) use ($responses) {
+            $alert->responders = $responses->get($alert->id, collect());
+
+            return $alert;
+        });
+
+        // ==========================================
+        // TOTAL COUNTS
+        // ==========================================
         $totalAlerts = DB::table('emergency_signals')->count();
 
         $activeAlerts = DB::table('emergency_signals')
@@ -215,6 +248,9 @@ class ReportController extends Controller
             ->where('signal_status', 'Resolved')
             ->count();
 
+        // ==========================================
+        // RETURN REPORT VIEW
+        // ==========================================
         return view(
             'admin.emergency_alerts_report',
             compact(
@@ -228,110 +264,87 @@ class ReportController extends Controller
 
     public function EmergencyResponsesReport(Request $request)
     {
-        $search = $request->search;
+    $search = $request->search;
 
-        // CHECK TABLE EXISTS
+    // CHECK TABLE EXISTS
+    if (!\Schema::hasTable('emergency_responses')) {
+        return view('admin.emergency_responses_report', [
+            'responses' => collect(),
+            'totalResponses' => 0,
+            'acceptedResponses' => 0,
+            'pendingResponses' => 0
+        ]);
+    }
 
-        if (!\Schema::hasTable('emergency_responses')) {
+    // FETCH RESPONSES WITH RESPONDER AND SOS USER DETAILS
+    $responses = DB::table('emergency_responses as er')
 
-            return view(
-                'admin.emergency_responses_report',
-                [
-                    'responses' => collect(),
-                    'totalResponses' => 0,
-                    'acceptedResponses' => 0,
-                    'pendingResponses' => 0
-                ]
-            );
-        }
+        // Responder details
+        ->join('users as responder', 'er.user_id', '=', 'responder.id')
 
-        $responses = DB::table('emergency_responses')
+        // SOS signal details
+        ->join('emergency_signals as es', 'er.signal_id', '=', 'es.id')
 
-            ->join(
-                'users',
-                'emergency_responses.user_id',
-                '=',
-                'users.id'
-            )
+        // Person who triggered the SOS
+        ->join('users as sos_user', 'es.user_id', '=', 'sos_user.id')
 
-            ->join(
-                'emergency_signals',
-                'emergency_responses.signal_id',
-                '=',
-                'emergency_signals.id'
-            )
+        ->select(
+            'er.*',
 
-            ->select(
-                'emergency_responses.*',
-                'users.name',
-                'users.phone_no',
-                'users.user_role',
-                'emergency_signals.signal_id as emergency_signal_code'
-            )
+            // Responder details
+            'responder.name as name',
+            'responder.phone_no as phone_no',
+            'responder.user_role as user_role',
 
-            ->when($search, function ($query) use ($search) {
+            // Public SOS signal ID
+            'es.signal_id as emergency_signal_code',
+            'es.signal_status as sos_status',
 
-                $query->where(function ($q) use ($search) {
+            // SOS user details
+            'sos_user.id as sos_user_id',
+            'sos_user.name as sos_user_name',
+            'sos_user.phone_no as sos_user_phone',
+            'sos_user.user_role as sos_user_role'
+        )
 
-                    $q->where(
-                        'users.name',
-                        'LIKE',
-                        "%{$search}%"
-                    )
+        ->when($search, function ($query) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('responder.name', 'LIKE', "%{$search}%")
+                    ->orWhere('responder.user_role', 'LIKE', "%{$search}%")
+                    ->orWhere('responder.phone_no', 'LIKE', "%{$search}%")
+                    ->orWhere('es.signal_id', 'LIKE', "%{$search}%")
+                    ->orWhere('es.signal_status', 'LIKE', "%{$search}%")
+                    ->orWhere('sos_user.name', 'LIKE', "%{$search}%")
+                    ->orWhere('sos_user.phone_no', 'LIKE', "%{$search}%")
+                    ->orWhere('er.status', 'LIKE', "%{$search}%")
+                    ->orWhere('er.response_action', 'LIKE', "%{$search}%");
+            });
+        })
 
-                    ->orWhere(
-                        'users.user_role',
-                        'LIKE',
-                        "%{$search}%"
-                    )
+        ->orderByDesc('er.id')
+        ->paginate(10)
+        ->withQueryString();
 
-                    ->orWhere(
-                        'emergency_signals.signal_id',
-                        'LIKE',
-                        "%{$search}%"
-                    )
+    // TOTAL COUNTS
+    $totalResponses = DB::table('emergency_responses')->count();
 
-                    ->orWhere(
-                        'emergency_responses.status',
-                        'LIKE',
-                        "%{$search}%"
-                    )
+    $acceptedResponses = DB::table('emergency_responses')
+        ->whereIn('response_action', ['accept', 'accepted'])
+        ->count();
 
-                    ->orWhere(
-                        'emergency_responses.response_action',
-                        'LIKE',
-                        "%{$search}%"
-                    );
-                });
-            })
+    $pendingResponses = DB::table('emergency_responses')
+        ->where('status', 'pending')
+        ->count();
 
-            ->latest('emergency_responses.id')
-
-            ->paginate(10)
-
-            ->withQueryString();
-
-        // TOTALS
-
-        $totalResponses = DB::table('emergency_responses')->count();
-
-        $acceptedResponses = DB::table('emergency_responses')
-            ->where('response_action', 'accepted')
-            ->count();
-
-        $pendingResponses = DB::table('emergency_responses')
-            ->where('status', 'pending')
-            ->count();
-
-        return view(
-            'admin.emergency_responses_report',
-            compact(
-                'responses',
-                'totalResponses',
-                'acceptedResponses',
-                'pendingResponses'
-            )
-        );
+    return view(
+        'admin.emergency_responses_report',
+        compact(
+            'responses',
+            'totalResponses',
+            'acceptedResponses',
+            'pendingResponses'
+        )
+    );
     }
 
     
