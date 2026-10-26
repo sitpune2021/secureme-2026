@@ -15,4 +15,12 @@ class EmergencyResponse extends Model
         'response_notes',
         'status'
     ];
+
+    // Emergency response kis user (Police/Helper) ne diya hai
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+
 }

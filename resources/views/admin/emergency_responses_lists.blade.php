@@ -343,162 +343,149 @@
                             <table class="table custom-table" id="responsesTable">
 
                                 <thead>
-
                                     <tr>
-
                                         <th>#</th>
                                         <th>Signal ID</th>
                                         <th>Responder</th>
+                                        <th>SOS User Helped</th>
                                         <th>Responder Type</th>
-                                        <th>Action</th>
-                                        <th>Status</th>
+                                        <th>Action / Progress</th>
+                                        <th>Help Status</th>
+                                        <th>SOS Status</th>
                                         <th>Date</th>
-
                                     </tr>
-
                                 </thead>
-
+                              
                                 <tbody>
-
                                     @forelse($responses as $index => $response)
-
                                         <tr>
+                                            {{-- Number --}}
+                                            <td>{{ $responses->firstItem() + $index }}</td>
 
+                                            {{-- Signal ID --}}
                                             <td>
-                                                {{ $index + 1 }}
-                                            </td>
-
-                                            <td>
-
                                                 <span class="badge-custom badge-primary">
-
-                                                    #{{ $response->signal_id }}
-
+                                                    {{ $response->public_signal_id ?? ('#' . $response->signal_id) }}
                                                 </span>
-
                                             </td>
 
+                                            {{-- Responder --}}
                                             <td>
-
                                                 <div class="user-flex">
-
                                                     <div class="user-avatar">
-
-                                                        {{ strtoupper(substr($response->user_name ?? 'N',0,1)) }}
-
+                                                        {{ strtoupper(substr($response->responder_name ?? 'N', 0, 1)) }}
                                                     </div>
 
                                                     <div>
-
                                                         <div class="user-name">
-
-                                                            {{ $response->user_name ?? 'N/A' }}
-
+                                                            {{ $response->responder_name ?? 'N/A' }}
                                                         </div>
 
                                                         <div class="user-id">
-
-                                                            Emergency Responder
-
+                                                            {{ $response->responder_phone ?? 'No phone' }}
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </td>
 
+                                            {{-- SOS User Helped --}}
+                                            <td>
+                                                <div class="user-flex">
+                                                    <div class="user-avatar">
+                                                        {{ strtoupper(substr($response->sos_user_name ?? 'U', 0, 1)) }}
                                                     </div>
 
+                                                    <div>
+                                                        <div class="user-name">
+                                                            {{ $response->sos_user_name ?? 'Unknown User' }}
+                                                        </div>
+
+                                                        <div class="user-id">
+                                                            {{ $response->sos_user_phone ?? 'No phone' }}
+                                                        </div>
+                                                    </div>
                                                 </div>
-
                                             </td>
 
+                                            {{-- Responder Type --}}
                                             <td>
-
-                                                @if($response->responder_type == 'helper')
-
-                                                    <span class="badge-custom badge-helper">
-
-                                                        {{ ucfirst($response->responder_type) }}
-
-                                                    </span>
-
+                                                @if(strtolower($response->responder_type) === 'helper')
+                                                    <span class="badge-custom badge-helper">Helper</span>
                                                 @else
-
                                                     <span class="badge-custom badge-police">
-
                                                         {{ ucfirst($response->responder_type) }}
-
                                                     </span>
-
                                                 @endif
-
                                             </td>
 
+                                            {{-- Action / Progress --}}
                                             <td>
-
                                                 @php
+                                                    $action = strtolower($response->response_action ?? 'pending');
 
                                                     $actionClass = [
-                                                        'accepted' => 'badge-success',
-                                                        'rejected' => 'badge-danger',
-                                                        'pending' => 'badge-warning',
-                                                        'in-progress' => 'badge-info',
+                                                        'accept'          => 'badge-success',
+                                                        'accepted'        => 'badge-success',
+                                                        'decline'         => 'badge-danger',
+                                                        'declined'        => 'badge-danger',
+                                                        'rejected'        => 'badge-danger',
+                                                        'on_the_way'      => 'badge-info',
+                                                        'arrived'          => 'badge-info',
+                                                        'help_completed'  => 'badge-success',
+                                                        'unable_to_help'  => 'badge-danger',
+                                                        'pending'          => 'badge-warning',
                                                     ];
-
                                                 @endphp
 
-                                                <span class="badge-custom {{ $actionClass[$response->response_action] ?? 'badge-secondary' }}">
-
-                                                    {{ ucfirst($response->response_action) }}
-
+                                                <span class="badge-custom {{ $actionClass[$action] ?? 'badge-secondary' }}">
+                                                    {{ ucwords(str_replace('_', ' ', $action)) }}
                                                 </span>
-
                                             </td>
 
+                                            {{-- Help Status --}}
                                             <td>
-
                                                 @php
+                                                    $helpStatus = strtolower($response->response_status ?? 'pending');
 
                                                     $statusClass = [
-                                                        'active' => 'badge-success',
-                                                        'inactive' => 'badge-secondary',
-                                                        'completed' => 'badge-primary',
-                                                        'failed' => 'badge-danger',
-                                                        'pending' => 'badge-warning',
+                                                        'in_progress' => 'badge-info',
+                                                        'completed'   => 'badge-success',
+                                                        'pending'     => 'badge-warning',
                                                     ];
-
                                                 @endphp
 
-                                                <span class="badge-custom {{ $statusClass[$response->status] ?? 'badge-secondary' }}">
-
-                                                    {{ ucfirst($response->status) }}
-
+                                                <span class="badge-custom {{ $statusClass[$helpStatus] ?? 'badge-secondary' }}">
+                                                    {{ ucwords(str_replace('_', ' ', $helpStatus)) }}
                                                 </span>
-
                                             </td>
 
+                                            {{-- SOS Status --}}
                                             <td>
+                                                @php
+                                                    $signalStatus = strtolower($response->signal_status ?? 'active');
+                                                @endphp
 
+                                                <span class="badge-custom {{ $signalStatus === 'resolved' ? 'badge-success' : 'badge-warning' }}">
+                                                    {{ ucfirst($signalStatus) }}
+                                                </span>
+                                            </td>
+
+                                            {{-- Date --}}
+                                            <td>
                                                 <div class="date-text">
-
-                                                    {{ \Carbon\Carbon::parse($response->created_at)->format('d M Y') }}
-
+                                                    {{ \Carbon\Carbon::parse($response->response_created_at ?? $response->created_at)->format('d M Y') }}
                                                 </div>
 
                                                 <div class="time-text">
-
-                                                    {{ \Carbon\Carbon::parse($response->created_at)->format('h:i A') }}
-
+                                                    {{ \Carbon\Carbon::parse($response->response_created_at ?? $response->created_at)->format('h:i A') }}
                                                 </div>
-
                                             </td>
-
                                         </tr>
 
                                     @empty
-
                                         <tr>
-
-                                            <td colspan="7">
-
+                                            <td colspan="9">
                                                 <div class="empty-box">
-
                                                     <img src="{{ asset('admin-assets/img/no-data.svg') }}">
 
                                                     <h5>No Emergency Responses</h5>
@@ -506,15 +493,10 @@
                                                     <p class="text-muted mb-0">
                                                         No response records available.
                                                     </p>
-
                                                 </div>
-
                                             </td>
-
                                         </tr>
-
                                     @endforelse
-
                                 </tbody>
 
                             </table>

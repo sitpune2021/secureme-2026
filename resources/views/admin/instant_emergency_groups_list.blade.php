@@ -425,59 +425,117 @@
                                             <td colspan="8">
 
                                                 <div class="member-box">
-
+                                                   
                                                     @forelse($group->members as $member)
+
+                                                        @php
+                                                            $membershipStatus = strtolower(
+                                                                $member->membership_status ?? 'pending'
+                                                            );
+
+                                                            $action = strtolower(
+                                                                $member->response_action ?? ''
+                                                            );
+
+                                                            $membershipLabels = [
+                                                                'pending'  => 'Pending Approval',
+                                                                'approved' => 'Approved',
+                                                                'accepted' => 'Accepted',
+                                                                'rejected' => 'Rejected',
+                                                            ];
+
+                                                            $membershipClasses = [
+                                                                'pending'  => 'pending-status',
+                                                                'approved' => 'accepted-status',
+                                                                'accepted' => 'accepted-status',
+                                                                'rejected' => 'rejected-status',
+                                                            ];
+
+                                                            $progressLabels = [
+                                                                'accept'          => 'Accepted',
+                                                                'accepted'        => 'Accepted',
+                                                                'decline'         => 'Declined',
+                                                                'declined'        => 'Declined',
+                                                                'rejected'        => 'Declined',
+                                                                'on_the_way'      => 'On The Way',
+                                                                'arrived'         => 'Arrived',
+                                                                'help_completed'  => 'Help Completed',
+                                                                'unable_to_help'  => 'Unable To Help',
+                                                            ];
+
+                                                            $progressClasses = [
+                                                                'accept'          => 'accepted-status',
+                                                                'accepted'        => 'accepted-status',
+                                                                'decline'         => 'rejected-status',
+                                                                'declined'        => 'rejected-status',
+                                                                'rejected'        => 'rejected-status',
+                                                                'on_the_way'      => 'pending-status',
+                                                                'arrived'         => 'accepted-status',
+                                                                'help_completed'  => 'accepted-status',
+                                                                'unable_to_help'  => 'rejected-status',
+                                                            ];
+                                                        @endphp
 
                                                         <div class="member-item">
 
                                                             <div class="member-left">
-
                                                                 <div class="member-avatar">
-
-                                                                    {{ strtoupper(substr($member->name,0,1)) }}
-
+                                                                    {{ strtoupper(substr($member->name ?? 'U', 0, 1)) }}
                                                                 </div>
 
                                                                 <div>
-
                                                                     <div class="member-name">
-
-                                                                        {{ $member->name }}
-
+                                                                        {{ $member->name ?? 'Unknown User' }}
                                                                     </div>
 
                                                                     <div class="member-role">
-
-                                                                        {{ $member->user_role }}
-
-                                                                        •
-
+                                                                        {{ $member->user_role ?? 'User' }}
+                                                                        &bull;
                                                                         {{ $member->phone_no ?? 'N/A' }}
-
                                                                     </div>
 
-                                                                </div>
+                                                                    <div class="member-role">
+                                                                        Membership:
+                                                                        <strong>
+                                                                            {{ $membershipLabels[$membershipStatus] ?? ucfirst($membershipStatus) }}
+                                                                        </strong>
+                                                                    </div>
 
+                                                                    @if($member->response_notes)
+                                                                        <div class="member-role">
+                                                                            Note: {{ $member->response_notes }}
+                                                                        </div>
+                                                                    @endif
+
+                                                                    @if($member->response_updated_at)
+                                                                        <div class="member-role">
+                                                                            Updated:
+                                                                            {{ \Carbon\Carbon::parse($member->response_updated_at)->format('d M Y, h:i A') }}
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
                                                             </div>
 
-                                                            <div>
+                                                            <div class="member-status-wrapper">
 
-                                                                @if($member->status == 'accepted')
+                                                                <span class="member-status {{ $membershipClasses[$membershipStatus] ?? 'pending-status' }}">
+                                                                    {{ $membershipLabels[$membershipStatus] ?? ucfirst($membershipStatus) }}
+                                                                </span>
 
+                                                                <br>
+
+                                                                @if($action !== '')
+                                                                    <span class="member-status {{ $progressClasses[$action] ?? 'pending-status' }}">
+                                                                        {{ $progressLabels[$action] ?? ucwords(str_replace('_', ' ', $action)) }}
+                                                                    </span>
+                                                                @elseif($member->member_role === 'owner')
                                                                     <span class="member-status accepted-status">
-
-                                                                        Accepted
-
+                                                                        SOS Owner
                                                                     </span>
-
                                                                 @else
-
                                                                     <span class="member-status pending-status">
-
-                                                                        Pending
-
+                                                                        No Response Yet
                                                                     </span>
-
                                                                 @endif
 
                                                             </div>
@@ -487,9 +545,7 @@
                                                     @empty
 
                                                         <div class="text-center text-muted">
-
                                                             No Members Found
-
                                                         </div>
 
                                                     @endforelse

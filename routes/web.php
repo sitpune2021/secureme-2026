@@ -65,6 +65,11 @@ Route::middleware(['auth'])->group(function ()
     // Emergency signal Module
     Route::get('/admin/all-emergency-signals', [SignalController::class, 'AllEmergencySignalsList'])->name('admin.all-emergency-signals');
 
+    Route::post(
+        'emergency-signal/close/{id}',
+        [SignalController::class, 'closeEmergencySignal']
+    )->name('admin.emergency-signal.close');
+
     // Emergency responses Module
     Route::get('/admin/all-emergency-responses', [EmergencyResponsesController::class, 'AllEmergencyResponsesList'])->name('admin.all-emergency-responses');
 

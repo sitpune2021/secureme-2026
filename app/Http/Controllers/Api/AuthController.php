@@ -615,61 +615,6 @@ class AuthController extends Controller
             }
         }
 
-        // public function userAddContacts(Request $request)
-        // {
-        //     try {
-        //         $validator = Validator::make($request->all(), [
-        //             'user_role' => 'required|string|in:Police,Manager,Gym_Person',
-        //             'name'      => 'required|string|max:255',
-        //             'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
-        //             'phone_no'  => ['required', 'string', 'min:10', 'unique:users,phone_no'],
-        //             'latitude' => 'required|numeric',
-        //             'longitude' => 'required|numeric',
-        //         ]);
-
-        //         if ($validator->fails()) {
-        //             return response()->json([
-        //                 'status' => false,
-        //                 'message' => $validator->errors()->first()
-        //             ], 422);
-        //         }
-
-        //         $validated = $validator->validated();
-
-        //         $contact = User::create([
-        //             'user_role' => $validated['user_role'],
-        //             'name'      => $validated['name'],
-        //             'email'     => strtolower($validated['email']),
-        //             'password'  => Hash::make('defaultpassword'),
-        //             'phone_no'  => $validated['phone_no'],
-        //             'latitude' => $validated['latitude'],
-        //             'longitude' => $validated['longitude'],
-        //         ]);
-
-        //         return response()->json([
-        //             'status' => true,
-        //             'message' => 'Contact added successfully',
-        //             'data' => [
-        //                 'id'        => $contact->id,
-        //                 'user_role' => $contact->user_role,
-        //                 'name'      => $contact->name,
-        //                 'email'     => $contact->email,
-        //                 'phone_no'  => $contact->phone_no,
-        //                 'latitude'  => $contact->latitude,
-        //                 'longitude'  => $contact->longitude,
-        //             ]
-        //         ], 201);
-        //     } catch (\Throwable $th) {
-        //         Log::error('Error adding contact: ' . $th->getMessage());
-
-        //         return response()->json([
-        //             'status' => false,
-        //             'message' => 'An error occurred while adding contact. Please try again later.'
-        //         ], 500);
-        //     }
-        // }
-
-
         public function userAddContacts(Request $request)
         {
             try {
@@ -813,28 +758,43 @@ class AuthController extends Controller
             }
         }
 
-    // ALERT
+    // ALERT  
         public function triggerSignal(Request $request)
         {
-            // Validate that lat/long are in the request BODY
             $validator = Validator::make($request->all(), [
-                'latitude'  => 'required|numeric',
-                'longitude' => 'required|numeric',
+                'latitude'  => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Validation Error',
-                    'errors' => $validator->errors()
+                    'errors'  => $validator->errors(),
                 ], 422);
             }
 
             try {
                 $user = $request->user();
 
-                return DB::transaction(function () use ($request, $user) {
-                    // 1. Store the signal in emergency_signals
+                // ==========================================
+                // ALLOW ONLY GENERAL USER TO TRIGGER SOS
+                // ==========================================
+                if (!in_array($user->user_role, ['General_User', 'User'])) {
+                    return response()->json([
+                        'status'  => false,
+                        'message' => 'Only general users can trigger an emergency SOS.',
+                        'user_role' => $user->user_role,
+                    ], 403);
+                }
+
+                // ==========================================
+                // CREATE EMERGENCY SIGNAL
+                // ==========================================
+                $result = DB::transaction(function () use ($request, $user) 
+                {
+
+                    // 1. Create emergency signal
                     $signal = EmergencySignal::create([
                         'user_id'       => $user->id,
                         'signal_id'     => 'SIG-' . strtoupper(uniqid()),
@@ -843,55 +803,230 @@ class AuthController extends Controller
                         'longitude'     => $request->longitude,
                     ]);
 
-                    // 2. Find responders within 1km (Haversine Formula)
-                    $radius = 1;
-                    $nearbyResponders = User::select('id', 'user_role')
-                        ->whereIn('user_role', ['Police', 'Gym_Person', 'Defense'])
-                        ->where('id', '!=', $user->id)
+                    // 2. Find responders within 1 km
+                    $nearbyResponders = User::query()
+                        ->select('users.id', 'users.user_role')
+                        ->whereIn('users.user_role', [
+                            'Police',
+                            'Gym_Person',
+                            'Defense',
+                        ])
+                        ->where('users.id', '!=', $user->id)
+                        ->whereNotNull('users.latitude')
+                        ->whereNotNull('users.longitude')
                         ->selectRaw(
-                            "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance",
-                            [$request->latitude, $request->longitude, $request->latitude]
+                            '(6371 * ACOS(LEAST(1, GREATEST(-1,
+                                COS(RADIANS(?))
+                                * COS(RADIANS(users.latitude))
+                                * COS(RADIANS(users.longitude) - RADIANS(?))
+                                + SIN(RADIANS(?))
+                                * SIN(RADIANS(users.latitude))
+                            )))) AS distance',
+                            [
+                                $request->latitude,
+                                $request->longitude,
+                                $request->latitude,
+                            ]
                         )
-                        ->having('distance', '<=', $radius)
+                        ->having('distance', '<=', 1)
                         ->get();
 
-                    // 3. Create the Emergency Group
+                    // 3. Create emergency group
                     $group = EmergencyGroup::create([
                         'signal_id'  => $signal->id,
-                        'group_name' => "Rescue Group for " . $user->name,
+                        'group_name' => 'Rescue Group for ' . $user->name,
                     ]);
 
-                    // 4. Add nearby members to emergency_group_members
-                    if ($nearbyResponders->isNotEmpty()) {
-                        $membersData = $nearbyResponders->map(function ($responder) use ($group) {
-                            return [
-                                'group_id'   => $group->id,
-                                'user_id'    => $responder->id,
-                                'joined_at'  => now(),
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-                        })->toArray();
+                    $now = now();
 
-                        EmergencyGroupMember::insert($membersData);
+                    // 4. Add SOS creator as group owner
+                    $membersData = [
+                        [
+                            'group_id'   => $group->id,
+                            'user_id'    => $user->id,
+                            'role'       => 'owner',
+                            'status'     => 'approved',
+                            'joined_at'  => $now,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ],
+                    ];
+
+                    // 5. Add nearby responders as pending members
+                    foreach ($nearbyResponders as $responder) {
+                        $membersData[] = [
+                            'group_id'   => $group->id,
+                            'user_id'    => $responder->id,
+                            'role'       => 'member',
+                            'status'     => 'pending',
+                            'joined_at'  => null,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
                     }
 
-                    return response()->json([
-                        'status'  => true,
-                        'message' => 'Signal activated. ' . $nearbyResponders->count() . ' helpers notified.',
-                        'data'    => [
-                            'signal_id' => $signal->signal_id,
-                            'group_id'  => $group->id,
-                            'helpers_found' => $nearbyResponders->count()
-                        ]
-                    ]);
+                    EmergencyGroupMember::insert($membersData);
+
+                    return [
+                        'signal'   => $signal,
+                        'group'    => $group,
+                        'responders' => $nearbyResponders,
+                    ];
                 });
+
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Emergency signal activated successfully.',
+                    'data'    => [
+                        // Public signal code used by the app
+                        'signal_id' => $result['signal']->signal_id,
+
+                        // Internal numeric database ID
+                        'signal_record_id' => $result['signal']->id,
+
+                        'group_id' => $result['group']->id,
+                        'signal_status' => $result['signal']->signal_status,
+                        'helpers_found' => $result['responders']->count(),
+                        'responders' => $result['responders']
+                            ->map(function ($responder) {
+                                return [
+                                    'user_id' => $responder->id,
+                                    'user_role' => $responder->user_role,
+                                    'distance_km' => round(
+                                        (float) $responder->distance,
+                                        3
+                                    ),
+                                ];
+                            })
+                            ->values(),
+                    ],
+                ], 201);
+
             } catch (\Throwable $th) {
                 Log::error('Signal Error: ' . $th->getMessage());
-                return response()->json(['status' => false, 'message' => 'Server Error'], 500);
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Unable to activate emergency signal.',
+                ], 500);
             }
         }
-    
+   
+        public function nearbySignals(Request $request)
+        {
+            $user = $request->user();
+
+            // Only responders can view nearby SOS alerts
+            if (!in_array($user->user_role, ['Police', 'Gym_Person', 'Defense'])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Only responders can view nearby emergency alerts.',
+                ], 403);
+            }
+
+            // Responder must have a saved location
+            if ($user->latitude === null || $user->longitude === null) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Please update your location before checking nearby emergencies.',
+                ], 422);
+            }
+
+            try {
+                $memberships = EmergencyGroupMember::with([
+                    'group.signal.user',
+                ])
+                    ->where('user_id', $user->id)
+                    ->where('role', 'member')
+                    ->whereIn('status', ['pending', 'approved'])
+                    ->get();
+
+                $alerts = $memberships
+                    ->map(function ($membership) use ($user) {
+                        $group = $membership->group;
+
+                        if (!$group || !$group->signal) {
+                            return null;
+                        }
+
+                        $signal = $group->signal;
+
+                        // Only active emergencies
+                        if ($signal->signal_status !== 'Active') {
+                            return null;
+                        }
+
+                        if ($signal->latitude === null || $signal->longitude === null) {
+                            return null;
+                        }
+
+                        // Calculate distance between responder and SOS location
+                        $lat1 = deg2rad((float) $user->latitude);
+                        $lon1 = deg2rad((float) $user->longitude);
+                        $lat2 = deg2rad((float) $signal->latitude);
+                        $lon2 = deg2rad((float) $signal->longitude);
+
+                        $a = sin(($lat2 - $lat1) / 2) ** 2
+                            + cos($lat1) * cos($lat2)
+                            * sin(($lon2 - $lon1) / 2) ** 2;
+
+                        $distance = 6371 * 2 * asin(
+                            min(1, sqrt($a))
+                        );
+
+                        // Only show alerts within 1 km
+                        if ($distance > 1) {
+                            return null;
+                        }
+
+                        $person = $signal->user;
+
+                        return [
+                            'signal_id' => $signal->signal_id,
+                            'signal_record_id' => $signal->id,
+                            'group_id' => $group->id,
+                            'signal_status' => $signal->signal_status,
+                            'created_at' => $signal->created_at,
+                            'distance_km' => round($distance, 3),
+
+                            'emergency_location' => [
+                                'latitude' => (float) $signal->latitude,
+                                'longitude' => (float) $signal->longitude,
+                            ],
+
+                            'user' => $person ? [
+                                'user_id' => $person->id,
+                                'name' => $person->name,
+                                'phone_no' => $person->phone_no,
+                            ] : null,
+
+                            'my_response_status' => $membership->status,
+                        ];
+                    })
+                    ->filter()
+                    ->values();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => $alerts->isEmpty()
+                        ? 'No active nearby emergencies found.'
+                        : 'Nearby emergencies fetched successfully.',
+                    'data' => [
+                        'total_alerts' => $alerts->count(),
+                        'alerts' => $alerts,
+                    ],
+                ]);
+
+            } catch (\Throwable $th) {
+                Log::error('Nearby SOS Error: ' . $th->getMessage());
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unable to fetch nearby emergencies.',
+                ], 500);
+            }
+        }
+
         public function updateLocation(Request $request)
         {
             $validator = Validator::make($request->all(), [
@@ -932,57 +1067,374 @@ class AuthController extends Controller
                 ], 500);
             }
         }
-    
+      
         public function respondToSignal(Request $request)
         {
             $validator = Validator::make($request->all(), [
-                'signal_id' => 'required|exists:emergency_signals,id',
-                'group_id' => 'required|exists:emergency_groups,id',
-                'action'    => 'required|string',
-                'notes'     => 'nullable|string',
+                'signal_id' => 'required',
+                'group_id'  => 'required|integer|exists:emergency_groups,id',
+                'action'    => 'required|string|in:accept,decline,accepted,declined',
+                'notes'     => 'nullable|string|max:2000',
             ]);
 
             if ($validator->fails()) {
-                return response()->json(['status' => false, 'errors' => $validator->errors()], 422);
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Validation Error',
+                    'errors'  => $validator->errors(),
+                ], 422);
             }
 
             try {
                 $user = $request->user();
 
-                $responderType = 'helper';
-                if (in_array($user->user_role, ['Police', 'Defense'])) {
-                    $responderType = 'police';
+                $action = strtolower($request->action);
+
+                // Support both action formats
+                $action = match ($action) {
+                    'accepted' => 'accept',
+                    'declined' => 'decline',
+                    default    => $action,
+                };
+
+                $result = DB::transaction(function () use (
+                    $request,
+                    $user,
+                    $action
+                ) {
+                    // 1. Resolve public signal code or numeric record ID
+                    $signalQuery = EmergencySignal::query();
+
+                    if (is_numeric($request->signal_id)) {
+                        $signalQuery->where(function ($query) use ($request) {
+                            $query->where('signal_id', $request->signal_id)
+                                ->orWhere('id', $request->signal_id);
+                        });
+                    } else {
+                        $signalQuery->where('signal_id', $request->signal_id);
+                    }
+
+                    $signal = $signalQuery->first();
+
+                    if (!$signal) {
+                        return [
+                            'error' => true,
+                            'code' => 404,
+                            'message' => 'Emergency signal not found.',
+                        ];
+                    }
+
+                    // 2. Ensure the group belongs to this signal
+                    $group = EmergencyGroup::where('id', $request->group_id)
+                        ->where('signal_id', $signal->id)
+                        ->first();
+
+                    if (!$group) {
+                        return [
+                            'error' => true,
+                            'code' => 422,
+                            'message' => 'The selected group does not belong to this signal.',
+                        ];
+                    }
+
+                    // 3. Only an assigned responder may respond
+                    $member = EmergencyGroupMember::where('group_id', $group->id)
+                        ->where('user_id', $user->id)
+                        ->where('role', 'member')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$member) {
+                        return [
+                            'error' => true,
+                            'code' => 403,
+                            'message' => 'You are not an assigned responder for this emergency.',
+                        ];
+                    }
+
+                    if ($signal->signal_status !== 'Active') {
+                        return [
+                            'error' => true,
+                            'code' => 422,
+                            'message' => 'This emergency is no longer active.',
+                        ];
+                    }
+
+                    if ($member->status !== 'pending') {
+                        return [
+                            'error' => true,
+                            'code' => 409,
+                            'message' => 'You have already responded to this emergency.',
+                        ];
+                    }
+
+                    // 4. Determine responder type
+                    $responderType = in_array(
+                        $user->user_role,
+                        ['Police', 'Defense']
+                    ) ? 'police' : 'helper';
+
+                    // 5. Store the response using valid database enum values
+                    $response = EmergencyResponse::create([
+                        'signal_id'       => $signal->id,
+                        'responder_type'  => $responderType,
+                        'user_id'         => $user->id,
+                        'response_action' => $action,
+                        'response_notes'  => $request->notes
+                            ?? ($action === 'accept'
+                                ? 'Responder accepted the emergency.'
+                                : 'Responder declined the emergency.'),
+                        'status' => $action === 'accept'
+                            ? 'in_progress'
+                            : 'completed',
+                    ]);
+
+                    // 6. Use the actual enum values from your database
+                    $member->status = $action === 'accept'
+                        ? 'approved'
+                        : 'rejected';
+
+                    $member->joined_at = $action === 'accept'
+                        ? now()
+                        : null;
+
+                    $member->save();
+
+                    return [
+                        'error' => false,
+                        'signal' => $signal,
+                        'group' => $group,
+                        'response' => $response,
+                        'action' => $action,
+                    ];
+                });
+
+                if ($result['error']) {
+                    return response()->json([
+                        'status'  => false,
+                        'message' => $result['message'],
+                    ], $result['code']);
                 }
-
-                $response = EmergencyResponse::create([
-                    'signal_id'       => $request->signal_id,
-                    'responder_type'  => $responderType,
-                    'user_id'         => $user->id,
-                    'response_action' => $request->action,
-                    'response_notes'  => $request->notes ?? 'Responder is moving to location.',
-                    'status'          => 'in_progress',
-                ]);
-
-                EmergencyGroupMember::where('group_id', $request->group_id)
-
-                ->where('user_id', $user->id)
-
-                ->update([
-
-                    'status' => 'accepted'
-
-                ]);
 
                 return response()->json([
                     'status'  => true,
-                    'message' => 'Response registered. You are now linked to this emergency.',
-                    'data'    => $response
+                    'message' => $result['action'] === 'accept'
+                        ? 'Emergency accepted successfully.'
+                        : 'Emergency declined successfully.',
+                    'data' => [
+                        'response_id' => $result['response']->id,
+                        'signal_id' => $result['signal']->signal_id,
+                        'group_id' => $result['group']->id,
+                        'action' => $result['action'],
+                        'response_status' => $result['response']->status,
+                        'member_status' => $result['action'] === 'accept'
+                            ? 'approved'
+                            : 'rejected',
+                    ],
                 ]);
+
             } catch (\Throwable $th) {
-                Log::error("Response Error: " . $th->getMessage());
-                return response()->json(['status' => false, 'message' => 'Could not register response.'], 500);
+                Log::error('Response Error: ' . $th->getMessage());
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Could not register emergency response.',
+                ], 500);
             }
         }
+        
+        public function updateResponseStatus(Request $request)
+        {
+            $validator = Validator::make($request->all(), [
+                'response_id' => 'required|integer|exists:emergency_responses,id',
+                'action' => 'required|string|in:on_the_way,arrived,help_completed,unable_to_help',
+                'notes' => 'nullable|string|max:2000',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            try {
+                $user = $request->user();
+
+                // Only Police, Gym Person and Defense can update responder status.
+                if (!in_array($user->user_role, ['Police', 'Gym_Person', 'Defense'])) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Only assigned responders can update emergency status.',
+                    ], 403);
+                }
+
+                $result = DB::transaction(function () use ($request, $user) {
+                    $response = EmergencyResponse::where('id', $request->response_id)
+                        ->where('user_id', $user->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (!$response) {
+                        return [
+                            'error' => true,
+                            'code' => 404,
+                            'message' => 'Your emergency response was not found.',
+                        ];
+                    }
+
+                    $signal = EmergencySignal::find($response->signal_id);
+
+                    if (!$signal) {
+                        return [
+                            'error' => true,
+                            'code' => 404,
+                            'message' => 'Emergency signal not found.',
+                        ];
+                    }
+
+                    // Do not allow updates after the SOS is resolved.
+                    if ($signal->signal_status !== 'Active') {
+                        return [
+                            'error' => true,
+                            'code' => 409,
+                            'message' => 'This emergency is no longer active.',
+                        ];
+                    }
+
+                    // Only an accepted, ongoing response can be updated.
+                    if (
+                        $response->status !== 'in_progress' ||
+                        !in_array($response->response_action, [
+                            'accept',
+                            'on_the_way',
+                            'arrived',
+                        ])
+                    ) {
+                        return [
+                            'error' => true,
+                            'code' => 409,
+                            'message' => 'This response cannot be updated further.',
+                        ];
+                    }
+
+                    $action = $request->action;
+
+                    $response->response_action = $action;
+
+                    if ($request->filled('notes')) {
+                        $response->response_notes = $request->notes;
+                    } else {
+                        $response->response_notes = match ($action) {
+                            'on_the_way' => 'Responder is on the way.',
+                            'arrived' => 'Responder has arrived at the location.',
+                            'help_completed' => 'Emergency assistance completed.',
+                            'unable_to_help' => 'Responder is unable to help.',
+                        };
+                    }
+
+                    $response->status = in_array($action, [
+                        'help_completed',
+                        'unable_to_help',
+                    ]) ? 'completed' : 'in_progress';
+
+                    $response->save();
+
+                    // Mark the SOS resolved only when help is completed.
+                    if ($action === 'help_completed') {
+                        $signal->signal_status = 'Resolved';
+                        $signal->save();
+                    }
+
+                    return [
+                        'error' => false,
+                        'response' => $response,
+                        'signal' => $signal,
+                    ];
+                });
+
+                if ($result['error']) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => $result['message'],
+                    ], $result['code']);
+                }
+
+                $response = $result['response'];
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Emergency status updated successfully.',
+                    'data' => [
+                        'response_id' => $response->id,
+                        'signal_id' => $result['signal']->signal_id,
+                        'responder_id' => $user->id,
+                        'responder_name' => $user->name,
+                        'responder_role' => $user->user_role,
+                        'response_action' => $response->response_action,
+                        'response_notes' => $response->response_notes,
+                        'response_status' => $response->status,
+                        'signal_status' => $result['signal']->signal_status,
+                        'updated_at' => $response->updated_at,
+                    ],
+                ]);
+            } catch (\Throwable $th) {
+                Log::error('Response Status Update Error: ' . $th->getMessage());
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unable to update emergency status.',
+                ], 500);
+            }
+        }
+        
+        public function getSignalStatus(Request $request, string $signalId)
+        {
+            $user = $request->user();
+
+            $signal = EmergencySignal::where('signal_id', $signalId)
+                ->with(['responses.user:id,name,user_role'])
+                ->first();
+
+            if (!$signal) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Emergency signal not found.',
+                ], 404);
+            }
+
+            // Only the person who created this SOS can view its tracking details.
+            if ((int) $signal->user_id !== (int) $user->id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You are not allowed to view this emergency.',
+                ], 403);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Emergency status fetched successfully.',
+                'data' => [
+                    'signal_id' => $signal->signal_id,
+                    'signal_status' => $signal->signal_status,
+                    'created_at' => $signal->created_at,
+                    'responders' => $signal->responses->map(function ($response) {
+                        return [
+                            'response_id' => $response->id,
+                            'responder_id' => $response->user_id,
+                            'responder_name' => $response->user?->name,
+                            'responder_role' => $response->user?->user_role,
+                            'response_action' => $response->response_action,
+                            'response_notes' => $response->response_notes,
+                            'response_status' => $response->status,
+                            'updated_at' => $response->updated_at,
+                        ];
+                    })->values(),
+                ],
+            ]);
+        }
+
 
     // Community
         public function createCommunity(Request $request)
