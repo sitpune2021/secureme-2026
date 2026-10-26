@@ -1396,7 +1396,8 @@ class AuthController extends Controller
             $user = $request->user();
 
             $signal = EmergencySignal::where('signal_id', $signalId)
-                ->with(['responses.user:id,name,user_role'])
+                //->with(['responses.user:id,name,user_role'])
+                ->with(['responses.user:id,name,user_role,latitude,longitude'])
                 ->first();
 
             if (!$signal) {
@@ -1430,6 +1431,8 @@ class AuthController extends Controller
                             'response_action' => $response->response_action,
                             'response_notes' => $response->response_notes,
                             'response_status' => $response->status,
+                            'latitude' => $response->user?->latitude,
+                            'longitude' => $response->user?->longitude,
                             'updated_at' => $response->updated_at,
                         ];
                     })->values(),
