@@ -912,6 +912,7 @@ class AuthController extends Controller
             }
         }
    
+        // user nearby SOS alerts
         public function nearbySignals(Request $request)
         {
             $user = $request->user();
@@ -1389,6 +1390,7 @@ class AuthController extends Controller
             }
         }
         
+        // Only the person who created this SOS can view its tracking details.
         public function getSignalStatus(Request $request, string $signalId)
         {
             $user = $request->user();
