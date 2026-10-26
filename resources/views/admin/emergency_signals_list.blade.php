@@ -351,6 +351,7 @@
                                         <th>Status</th>
                                         <th>Location</th>
                                         <th>Date & Time</th>
+                                        <th>Responder / Helper Status</th>
                                         <th class="text-center">Action</th>
 
                                     </tr>
@@ -442,36 +443,87 @@
                                                 </small>
 
                                             </td>
+                                           
+                                            <td>
+                                                @forelse($signal->responders as $responder)
+                                                    <div class="mb-2 p-2 border rounded">
+                                                        <strong>
+                                                            {{ $responder->responder_name ?? 'Unknown Responder' }}
+                                                        </strong>
+
+                                                        <br>
+
+                                                        <small>
+                                                            Role:
+                                                            {{ $responder->responder_role ?? $responder->responder_type }}
+                                                        </small>
+
+                                                        <br>
+
+                                                        <small>
+                                                            Phone:
+                                                            {{ $responder->responder_phone ?? 'N/A' }}
+                                                        </small>
+
+                                                        <br>
+
+                                                        <span class="status-badge">
+                                                            {{ ucwords(str_replace('_', ' ', $responder->response_action)) }}
+                                                        </span>
+
+                                                        <br>
+
+                                                        <small>
+                                                            Response:
+                                                            {{ ucwords(str_replace('_', ' ', $responder->response_status)) }}
+                                                        </small>
+
+                                                        @if($responder->response_notes)
+                                                            <br>
+                                                            <small>
+                                                                {{ $responder->response_notes }}
+                                                            </small>
+                                                        @endif
+
+                                                        <br>
+
+                                                        <small class="text-muted">
+                                                            Updated:
+                                                            {{ \Carbon\Carbon::parse($responder->updated_at)->format('d M Y, h:i A') }}
+                                                        </small>
+                                                    </div>
+                                                @empty
+                                                    <span class="text-muted">No responder yet</span>
+                                                @endforelse
+                                            </td>
 
                                             <td class="text-center">
-
                                                 @if($signal->signal_status == 'Active')
 
-                                                    <form action="{{ url('admin/emergency-signal/close/'.$signal->id) }}"
+                                                    <form action="{{ route('admin.emergency-signal.close', $signal->id) }}"
                                                         method="POST">
-
                                                         @csrf
 
-                                                        <button class="close-btn">
-
+                                                        <button type="submit" class="close-btn">
                                                             <i class="fas fa-times-circle mr-1"></i>
                                                             Close
-
                                                         </button>
-
                                                     </form>
+
+                                                @elseif($signal->signal_status == 'Resolved')
+
+                                                    <span class="closed-text">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        Closed
+                                                    </span>
 
                                                 @else
 
                                                     <span class="closed-text">
-
-                                                        <i class="fas fa-check-circle"></i>
-                                                        Closed
-
+                                                        {{ $signal->signal_status }}
                                                     </span>
 
                                                 @endif
-
                                             </td>
 
                                         </tr>
@@ -480,7 +532,7 @@
 
                                         <tr>
 
-                                            <td colspan="7">
+                                            <td colspan="8">
 
                                                 <div class="empty-box">
 
