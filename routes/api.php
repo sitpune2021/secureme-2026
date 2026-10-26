@@ -43,9 +43,21 @@ Route::prefix('auth')->group(function () {
             // Emergency Routes
             Route::post('signal/trigger', [AuthController::class, 'triggerSignal']);
 
+            Route::get('signal/nearby', [AuthController::class, 'nearbySignals']);
+
             Route::post('user/update-location', [AuthController::class, 'updateLocation']);
 
             Route::post('signal/respond', [AuthController::class, 'respondToSignal']);
+
+            Route::post(
+                'signal/update-response-status',
+                [AuthController::class, 'updateResponseStatus']
+            );
+
+            Route::get(
+                'signal/status/{signalId}',
+                [AuthController::class, 'getSignalStatus']
+            );
 
             // Community Routes
             Route::post('community/create', [AuthController::class, 'createCommunity']);

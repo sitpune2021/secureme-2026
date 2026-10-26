@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmergencySignal extends Model
 {
+
+
     protected $table = 'emergency_signals';
 
     protected $fillable = [
@@ -15,4 +17,29 @@ class EmergencySignal extends Model
         'latitude',
         'longitude',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(
+            EmergencyGroup::class,
+            'signal_id',
+            'id'
+        );
+    }
+
+    public function responses()
+    {
+        return $this->hasMany(
+            EmergencyResponse::class,
+            'signal_id',
+            'id'
+        );
+    }
+
+    
 }
