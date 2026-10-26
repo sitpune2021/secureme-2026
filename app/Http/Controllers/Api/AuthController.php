@@ -980,6 +980,11 @@ class AuthController extends Controller
                             return null;
                         }
 
+                        // Only show alerts within 5 km
+                        // if ($distance > 5) {
+                        //     return null;
+                        // }
+
                         $person = $signal->user;
 
                         return [
